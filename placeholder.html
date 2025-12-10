@@ -1,91 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Slideshow</title>
-  <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background: #f2f2f2;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .swiper {
-      width: 95%;
-      max-width: 900px;
-      height: 90vh;
-    }
-    .swiper-slide img {
-      width: 100%;
-      height: auto;
-      object-fit: contain;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Deck Placeholder</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Noto+Sans+JP:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b1530;--ink:#fff;--outline:#ffffff26}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,"Noto Sans JP",sans-serif;background:var(--bg);color:var(--ink);min-height:100dvh;display:grid;place-items:center}
+.box{border:1px solid var(--outline);border-radius:22px;padding:22px 18px;max-width:720px;margin:16px;background:linear-gradient(180deg,#0f1b3e,#0b1530);box-shadow:0 10px 28px #0009}
+.box h1{font-family:Cinzel,serif;font-size:22px;margin-bottom:4px}
+.box p{color:#c7d2fe;margin:6px 0 14px}
+.row{display:flex;gap:8px;flex-wrap:wrap}
+.btn{display:inline-block;padding:10px 12px;border-radius:14px;border:1px solid #ffffff26;background:#101a39;color:#e2e8f0;text-decoration:none}
+.btn:hover{background:#122045}
+</style>
 </head>
 <body>
-
-  <div class="swiper">
-    <div class="swiper-wrapper">
-      <div class="swiper-slide"><img src="01.jpg" alt="01"></div>
-      <div class="swiper-slide"><img src="02.jpg" alt="02"></div>
-      <div class="swiper-slide"><img src="03.jpg" alt="03"></div>
-      <div class="swiper-slide"><img src="04.jpg" alt="04"></div>
-      <div class="swiper-slide"><img src="05.jpg" alt="05"></div>
-      <div class="swiper-slide"><img src="06.jpg" alt="06"></div>
-      <div class="swiper-slide"><img src="07.jpg" alt="07"></div>
-      <div class="swiper-slide"><img src="08.jpg" alt="08"></div>
-      <div class="swiper-slide"><img src="09.jpg" alt="09"></div>
-      <div class="swiper-slide"><img src="10.jpg" alt="10"></div>
-      <div class="swiper-slide"><img src="11.jpg" alt="11"></div>
-      <div class="swiper-slide"><img src="12.jpg" alt="12"></div>
-      <div class="swiper-slide"><img src="13.jpg" alt="13"></div>
-      <div class="swiper-slide"><img src="14.jpg" alt="14"></div>
-      <div class="swiper-slide"><img src="15.jpg" alt="15"></div>
-      <div class="swiper-slide"><img src="16.jpg" alt="16"></div>
-      <div class="swiper-slide"><img src="17.jpg" alt="17"></div>
-      <div class="swiper-slide"><img src="18.jpg" alt="18"></div>
-      <div class="swiper-slide"><img src="19.jpg" alt="19"></div>
-      <div class="swiper-slide"><img src="20.jpg" alt="20"></div>
-      <div class="swiper-slide"><img src="21.jpg" alt="21"></div>
-      <div class="swiper-slide"><img src="22.jpg" alt="22"></div>
-      <div class="swiper-slide"><img src="23.jpg" alt="23"></div>
-      <div class="swiper-slide"><img src="24.jpg" alt="24"></div>
-      <div class="swiper-slide"><img src="25.jpg" alt="25"></div>
-      <div class="swiper-slide"><img src="26.jpg" alt="26"></div>
-      <div class="swiper-slide"><img src="27.jpg" alt="27"></div>
-      <div class="swiper-slide"><img src="28.jpg" alt="28"></div>
-      <div class="swiper-slide"><img src="29.jpg" alt="29"></div>
-      <div class="swiper-slide"><img src="30.jpg" alt="30"></div>
-      <div class="swiper-slide"><img src="31.jpg" alt="31"></div>
-      <div class="swiper-slide"><img src="32.jpg" alt="32"></div>
-      <div class="swiper-slide"><img src="33.jpg" alt="33"></div>
-    </div>
-
-    <div class="swiper-button-next"></div>
-    <div class="swiper-button-prev"></div>
-    <div class="swiper-pagination"></div>
-  </div>
-
-  <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-  <script>
-    const swiper = new Swiper('.swiper', {
-      loop: false,
-      navigation: {
-        nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev',
-      },
-      pagination: {
-        el: '.swiper-pagination',
-        clickable: true,
-      },
-      grabCursor: true,
-    });
-  </script>
-
+<main class="box" id="box">
+<h1>Placeholder Deck</h1>
+<p id="desc">Loading…</p>
+<div class="row">
+<a class="btn" href="index.html">Back to Adventure Map</a>
+</div>
+</main>
+<script>
+const qs = new URLSearchParams(location.search);
+const m = (qs.get('month')||'').replace(/^\w/,c=>c.toUpperCase());
+const w = qs.get('week');
+const d = qs.get('deck');
+const name = `${m || 'Month'} — Week ${w || '?'} — Deck ${d || '?'}`;
+document.title = name;
+document.querySelector('h1').textContent = name;
+document.getElementById('desc').textContent = 'Replace this page with your real deck URL later.';
+</script>
 </body>
 </html>
+-->
