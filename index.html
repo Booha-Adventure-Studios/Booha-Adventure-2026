@@ -1,91 +1,811 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Slideshow</title>
-  <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
-  <style>
-    body {
-      margin: 0;
-      font-family: sans-serif;
-      background: #f2f2f2;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .swiper {
-      width: 95%;
-      max-width: 900px;
-      height: 90vh;
-    }
-    .swiper-slide img {
-      width: 100%;
-      height: auto;
-      object-fit: contain;
-    }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Booha Maze — Year One (Deluxe 6 Final)</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Noto+Sans+JP:wght@500;700&display=swap" rel="stylesheet" />
+<style>
+:root{--zoom:1;--tx:0px;--ty:0px;}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  width:100%;
+  height:100%;
+  overflow-x:hidden;
+  overflow-y:auto;
+  background:#0b1c11;
+  font-family:system-ui,"Noto Sans JP",sans-serif;
+}
+.viewport{
+  position:relative;
+  width:100vw;
+  min-height:100vh;
+  overflow:visible;
+}
+.world{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) scale(var(--zoom));
+  transform-origin:center;
+  transition:transform .65s cubic-bezier(.22,.65,.2,1);
+}
+
+/* Maze locked to 1024×1536 (2:3) image */
+#maze{
+  position:relative;
+  width:min(100vw, calc(100vh * (2/3)));
+  aspect-ratio:2 / 3;
+  background:url('assets/maze.png') center / 100% 100% no-repeat;
+  margin:0 auto;
+  touch-action:pan-y; /* allow vertical scroll on mobile */
+}
+
+/* Booha */
+#booha{
+  position:absolute;
+  width:68px;
+  height:68px;
+  transform:translate(-50%,-50%) scale(1);
+  z-index:12;
+  pointer-events:none;
+  opacity:0;
+  filter:drop-shadow(0 0 10px #ffe17a) drop-shadow(0 4px 18px #000a);
+}
+@keyframes bob{
+  0%,100%{transform:translate(-50%,-50%) translateY(0)}
+  50%{transform:translate(-50%,-50%) translateY(-6px)}
+}
+.bobbing{animation:bob 3.6s ease-in-out infinite}
+@keyframes glowPulse{
+  0%{filter:drop-shadow(0 0 2px #fff6) drop-shadow(0 0 6px #ffd86d);}
+  50%{filter:drop-shadow(0 0 14px #fff) drop-shadow(0 0 28px #ffd86d);}
+  100%{filter:drop-shadow(0 0 10px #ffe17a) drop-shadow(0 4px 18px #000a);}
+}
+
+/* Poof smoke */
+.smoke{
+  position:absolute;
+  width:160px;
+  height:160px;
+  left:0;
+  top:0;
+  transform:translate(-50%,-50%) scale(.5);
+  pointer-events:none;
+  z-index:10;
+  background:radial-gradient(circle at 50% 50%,rgba(255,255,255,.9)0%,rgba(255,255,255,.5)30%,rgba(255,255,255,0)70%);
+  animation:poof 1.2s ease-out forwards;
+}
+@keyframes poof{
+  0%{opacity:1;transform:translate(-50%,-50%) scale(.5);}
+  60%{opacity:.6;transform:translate(-50%,-50%) scale(2);}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(3);}
+}
+
+/* Gold glitter trail */
+.spark{
+  position:absolute;
+  width:4.4px;
+  height:4.4px;
+  border-radius:50%;
+  pointer-events:none;
+  background:radial-gradient(circle at 40% 40%,#fff,#ffd86d 60%,transparent 80%);
+  box-shadow:0 0 6px #fff6cc,0 0 12px #ffd86d,0 0 20px #ffec9c;
+  opacity:.97;
+  animation:spark 1s ease-out forwards;
+}
+@keyframes spark{
+  0%{transform:translate(0,0) scale(1);opacity:1}
+  50%{opacity:.9}
+  100%{transform:translate(0,12px) scale(.7);opacity:0}
+}
+
+/* Fairy glitter (month color) */
+.fairy{
+  position:absolute;
+  width:5px;
+  height:5px;
+  border-radius:50%;
+  pointer-events:none;
+  background:radial-gradient(circle,#fff 0%,currentColor 60%,transparent 80%);
+  box-shadow:0 0 10px currentColor,0 0 24px currentColor,0 0 40px currentColor;
+  opacity:.9;
+  animation:drift var(--dur,5200ms) cubic-bezier(.2,.7,.1,1) forwards,twinkle .8s infinite alternate;
+  z-index:20;
+}
+@keyframes drift{
+  0%{transform:translate(-50%,-50%) scale(.9)}
+  100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.1);opacity:0}
+}
+@keyframes twinkle{
+  0%{filter:brightness(1)}
+  100%{filter:brightness(1.8)}
+}
+
+/* Checkpoints */
+.stop{
+  position:absolute;
+  width:18px;
+  height:18px;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  opacity:0;
+  pointer-events:none;
+  z-index:11;
+}
+.stop.hidden{
+  opacity:0;
+  transform:translate(-50%,-50%) scale(.6)
+}
+.stop.active{
+  opacity:1;
+  pointer-events:auto;
+  animation:pulse 2s ease-in-out infinite;
+}
+.stop.old{
+  opacity:1;
+  pointer-events:none;
+  background:#000;
+  box-shadow:0 0 0 2px #ffdf80,0 0 10px #ffdf80,0 0 24px #ffdf80;
+}
+@keyframes pulse{
+  0%,100%{filter:brightness(1)}
+  50%{filter:brightness(1.4)}
+}
+
+/* Modal window */
+.modal{
+  position:fixed;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  background:#0008;
+  z-index:120;
+}
+.modal.show{display:flex}
+.card{
+  --glow:#9ad;
+  position:relative;
+  width:min(760px,92vw);
+  background:#0f1836;
+  border:1px solid #ffffff26;
+  border-radius:18px;
+  padding:22px 24px 20px;
+  color:#fff;
+  text-align:center;
+  transform:scale(.92);
+  opacity:0;
+  animation:pop .45s cubic-bezier(.2,.8,.2,1) forwards,breathe 3.2s ease-in-out .45s infinite;
+  box-shadow:0 0 0 1px #ffffff10 inset,0 0 18px var(--glow),0 0 38px var(--glow);
+}
+@keyframes pop{
+  to{transform:scale(1);opacity:1}
+}
+@keyframes breathe{
+  0%,100%{
+    box-shadow:0 0 0 1px #ffffff10 inset,0 0 18px var(--glow),0 0 38px var(--glow)
+  }
+  50%{
+    box-shadow:0 0 0 1px #ffffff10 inset,0 0 28px var(--glow),0 0 58px var(--glow)
+  }
+}
+.card .title-en{
+  font-family:"Cinzel",serif;
+  font-weight:900;
+  font-size:clamp(22px,3.2vw,30px);
+  text-shadow:0 0 14px var(--glow),0 0 28px var(--glow)
+}
+.card .title-jp{
+  font-family:"Noto Sans JP",sans-serif;
+  margin-top:6px;
+  font-weight:700;
+  opacity:.9
+}
+.placeholders{
+  display:flex;
+  gap:16px;
+  justify-content:center;
+  margin-top:18px
+}
+.box{
+  width:180px;
+  height:120px;
+  border-radius:16px;
+  background:linear-gradient(145deg,#0e1531,#121e45);
+  border:1px solid #ffffff22;
+  box-shadow:0 0 18px var(--glow),inset 0 0 0 1px #ffffff10;
+  display:grid;
+  place-items:center;
+  font-family:"Cinzel",serif;
+  font-weight:700;
+}
+.card .hint{
+  opacity:.8;
+  margin-top:12px;
+  font-size:.95rem
+}
+
+/* Close (x) button inside card */
+.close-btn{
+  position:absolute;
+  top:8px;
+  right:10px;
+  border:none;
+  background:transparent;
+  color:#ffffffcc;
+  font-size:18px;
+  cursor:pointer;
+  padding:4px 6px;
+}
+.close-btn:hover{
+  color:#fff;
+}
+
+/* Bottom-left tools: BRYAN + RESET */
+.tools{
+  position:fixed;
+  left:12px;
+  bottom:12px;
+  display:flex;
+  gap:8px;
+  z-index:200;
+}
+.btn{
+  padding:10px 14px;
+  font-weight:700;
+  border-radius:12px;
+  border:1px solid #ffffff26;
+  background:#203a27;
+  color:#e5edff;
+  cursor:pointer;
+  font-size:13px;
+}
+.btn:hover{background:#25452f}
+
+/* Start button (top-left) */
+.start-wrap{
+  position:fixed;
+  top:12px;
+  left:12px;
+  z-index:210;
+}
+.start-btn{
+  padding:10px 18px;
+}
+
+/* Mobile tweaks */
+@media (max-width:768px){
+  .btn{
+    padding:11px 16px;
+    font-size:14px;
+  }
+  .tools{
+    gap:6px;
+  }
+  #booha{
+    width:60px;
+    height:60px;
+  }
+  .card{
+    padding:18px 16px 18px;
+  }
+}
+</style>
 </head>
 <body>
+<div class="start-wrap">
+  <button class="btn start-btn" id="start">Start</button>
+</div>
 
-  <div class="swiper">
-    <div class="swiper-wrapper">
-      <div class="swiper-slide"><img src="01.jpg" alt="01"></div>
-      <div class="swiper-slide"><img src="02.jpg" alt="02"></div>
-      <div class="swiper-slide"><img src="03.jpg" alt="03"></div>
-      <div class="swiper-slide"><img src="04.jpg" alt="04"></div>
-      <div class="swiper-slide"><img src="05.jpg" alt="05"></div>
-      <div class="swiper-slide"><img src="06.jpg" alt="06"></div>
-      <div class="swiper-slide"><img src="07.jpg" alt="07"></div>
-      <div class="swiper-slide"><img src="08.jpg" alt="08"></div>
-      <div class="swiper-slide"><img src="09.jpg" alt="09"></div>
-      <div class="swiper-slide"><img src="10.jpg" alt="10"></div>
-      <div class="swiper-slide"><img src="11.jpg" alt="11"></div>
-      <div class="swiper-slide"><img src="12.jpg" alt="12"></div>
-      <div class="swiper-slide"><img src="13.jpg" alt="13"></div>
-      <div class="swiper-slide"><img src="14.jpg" alt="14"></div>
-      <div class="swiper-slide"><img src="15.jpg" alt="15"></div>
-      <div class="swiper-slide"><img src="16.jpg" alt="16"></div>
-      <div class="swiper-slide"><img src="17.jpg" alt="17"></div>
-      <div class="swiper-slide"><img src="18.jpg" alt="18"></div>
-      <div class="swiper-slide"><img src="19.jpg" alt="19"></div>
-      <div class="swiper-slide"><img src="20.jpg" alt="20"></div>
-      <div class="swiper-slide"><img src="21.jpg" alt="21"></div>
-      <div class="swiper-slide"><img src="22.jpg" alt="22"></div>
-      <div class="swiper-slide"><img src="23.jpg" alt="23"></div>
-      <div class="swiper-slide"><img src="24.jpg" alt="24"></div>
-      <div class="swiper-slide"><img src="25.jpg" alt="25"></div>
-      <div class="swiper-slide"><img src="26.jpg" alt="26"></div>
-      <div class="swiper-slide"><img src="27.jpg" alt="27"></div>
-      <div class="swiper-slide"><img src="28.jpg" alt="28"></div>
-      <div class="swiper-slide"><img src="29.jpg" alt="29"></div>
-      <div class="swiper-slide"><img src="30.jpg" alt="30"></div>
-      <div class="swiper-slide"><img src="31.jpg" alt="31"></div>
-      <div class="swiper-slide"><img src="32.jpg" alt="32"></div>
-      <div class="swiper-slide"><img src="33.jpg" alt="33"></div>
-    </div>
-
-    <div class="swiper-button-next"></div>
-    <div class="swiper-button-prev"></div>
-    <div class="swiper-pagination"></div>
+<div class="viewport" id="viewport">
+  <div class="world" id="world">
+    <div id="maze"></div>
   </div>
+</div>
 
-  <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
-  <script>
-    const swiper = new Swiper('.swiper', {
-      loop: false,
-      navigation: {
-        nextEl: '.swiper-button-next',
-        prevEl: '.swiper-button-prev',
-      },
-      pagination: {
-        el: '.swiper-pagination',
-        clickable: true,
-      },
-      grabCursor: true,
-    });
-  </script>
+<!-- Updated ghost image -->
+<img id="booha" src="assets/BoohaYellow.png" alt="booha"/>
 
+<!-- Bottom-left tools: BRYAN + RESET -->
+<div class="tools">
+  <button class="btn" id="bryanBtn">BRYAN</button>
+  <button class="btn" id="resetTest">RESET (TEST)</button>
+</div>
+
+<!-- Modal window -->
+<div class="modal" id="modal">
+  <div class="card" id="card">
+    <button class="close-btn" id="close-modal" aria-label="Close">✕</button>
+    <div class="title-en" id="title-en">January — Week 1</div>
+    <div class="title-jp" id="title-jp">1月　第1週</div>
+    <div class="placeholders">
+      <div class="box">Deck 1</div>
+      <div class="box">Deck 2</div>
+    </div>
+    <div class="hint">キラキラしている週にもどってね！</div>
+  </div>
+</div>
+
+<script>
+const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS_JP=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+
+// Bolder, clearly distinct month colors
+const MONTH_COLORS=[
+  '#38BDF8', // Jan - icy blue
+  '#FB7185', // Feb - hot pink
+  '#22C55E', // Mar - fresh green
+  '#A855F7', // Apr - lilac purple
+  '#EAB308', // May - yellow-gold
+  '#06B6D4', // Jun - teal
+  '#EF4444', // Jul - bold red
+  '#FACC15', // Aug - bright gold
+  '#166534', // Sep - deep forest green
+  '#F97316', // Oct - pumpkin orange
+  '#B91C1C', // Nov - wine red
+  '#22D3EE'  // Dec - electric cyan
+];
+
+const POS = [
+/* 1 */ {"x":29.43,"y":6.82},
+/* 2 */ {"x":30.04,"y":55.60},
+/* 3 */ {"x":72.05,"y":68.51},
+/* 4 */ {"x":53.92,"y":13.34},
+
+/* 5 */ {"x":23.47,"y":82.55},
+/* 6 */ {"x":63.67,"y":32.74},
+/* 7 */ {"x":32.22,"y":26.27},
+/* 8 */ {"x":64.01,"y":82.87},
+
+/* 9 */ {"x":55.77,"y":59.76},
+/* 10 */ {"x":72.68,"y":23.97},
+/* 11 */ {"x":44.46,"y":13.17},
+/* 12 */ {"x":22.77,"y":63.78},
+
+/* 13 */ {"x":45.77,"y":41.90},
+/* 14 */ {"x":40.14,"y":73.89},
+/* 15 */ {"x":37.55,"y":13.26},
+/* 16 */ {"x":71.01,"y":59.21},
+
+/* 17 */ {"x":42.32,"y":26.35},
+/* 18 */ {"x":32.22,"y":82.54},
+/* 19 */ {"x":56.73,"y":22.94},
+/* 20 */ {"x":23.63,"y":89.92},
+
+/* 21 */ {"x":63.51,"y":42.22},
+/* 22 */ {"x":29.35,"y":9.92},
+/* 23 */ {"x":41.73,"y":54.84},
+/* 24 */ {"x":75.06,"y":80.00},
+
+/* 25 */ {"x":20.89,"y":37.06},
+/* 26 */ {"x":57.92,"y":94.52},
+/* 27 */ {"x":69.35,"y":51.11},
+/* 28 */ {"x":33.28,"y":89.65},
+
+/* 29 */ {"x":72.20,"y":35.40},
+/* 30 */ {"x":21.96,"y":74.21},
+/* 31 */ {"x":55.67,"y":51.01},
+/* 32 */ {"x":37.20,"y":26.51},
+
+/* 33 */ {"x":55.98,"y":73.89},
+/* 34 */ {"x":56.25,"y":31.98},
+/* 35 */ {"x":55.77,"y":82.86},
+/* 36 */ {"x":21.01,"y":45.56},
+
+/* 37 */ {"x":64.36,"y":59.18},
+/* 38 */ {"x":39.35,"y":64.05},
+/* 39 */ {"x":71.49,"y":41.59},
+/* 40 */ {"x":8.15,"y":86.51},
+
+/* 41 */ {"x":48.97,"y":63.78},
+/* 42 */ {"x":42.08,"y":94.37},
+/* 43 */ {"x":82.80,"y":30.00},
+/* 44 */ {"x":84.70,"y":74.29},
+
+/* 45 */ {"x":43.39,"y":82.86},
+/* 46 */ {"x":53.47,"y":41.96},
+/* 47 */ {"x":29.35,"y":19.92},
+/* 48 */ {"x":74.70,"y":94.92},
+];
+
+const maze=document.getElementById('maze');
+const booha=document.getElementById('booha');
+const modal=document.getElementById('modal');
+const card=document.getElementById('card');
+const titleEN=document.getElementById('title-en');
+const titleJP=document.getElementById('title-jp');
+const closeModalBtn=document.getElementById('close-modal');
+const startBtn=document.getElementById('start');
+const resetTestBtn=document.getElementById('resetTest');
+const bryanBtn=document.getElementById('bryanBtn');
+
+const bgm=new Audio('audio/sneaky.mp3');bgm.loop=true;
+const sfxCheckpoint=new Audio('audio/checkpoint.mp3');
+let audioPrimed=false;
+let gameStarted=false;
+let bryanMode=false; // 👑 BRYAN override flag
+
+// one-time-per-checkpoint tracking (per browser)
+const VISITED_KEY='boohaMazeVisitedStops';
+let visited=new Array(POS.length).fill(false);
+try{
+  const stored=localStorage.getItem(VISITED_KEY);
+  if(stored){
+    const parsed=JSON.parse(stored);
+    if(Array.isArray(parsed)&&parsed.length===POS.length){
+      visited=parsed;
+    }
+  }
+}catch(e){}
+
+function saveVisited(){
+  try{
+    localStorage.setItem(VISITED_KEY,JSON.stringify(visited));
+  }catch(e){}
+}
+
+function primeAudio(){
+  if(audioPrimed)return;
+  audioPrimed=true;
+  bgm.currentTime=0;
+  bgm.play().catch(()=>{});
+}
+
+/* calendar / window logic */
+let todayIndex=0;
+let WINDOW_START=0,WINDOW_END=0;
+
+function getCurrentIndexFromDate(){
+  const now=new Date();
+  const year=now.getFullYear();
+  let month=now.getMonth(); // 0-11
+
+  // First day of month
+  const firstOfMonth=new Date(year,month,1);
+  const day=firstOfMonth.getDay(); // 0=Sun,1=Mon,...
+  const firstMonday=new Date(firstOfMonth);
+  const offset=(1-day+7)%7; // days from firstOfMonth to first Monday
+  firstMonday.setDate(1+offset);
+
+  let week=1;
+  if(now<firstMonday){
+    week=1;
+  }else{
+    const diffMs=now-firstMonday;
+    const diffDays=Math.floor(diffMs/86400000);
+    week=1+Math.floor(diffDays/7);
+    if(week>4)week=4;
+  }
+
+  let idx=month*4+(week-1);
+  if(idx<0)idx=0;
+  if(idx>=POS.length)idx=POS.length-1;
+  return idx;
+}
+
+// 4-week window starting 1 week in the future
+function updateWindowFromCurrentIndex(idx){
+  // if we're already at or beyond the last week, show the last 4 weeks
+  if(idx >= POS.length-1){
+    WINDOW_END = POS.length-1;
+    WINDOW_START = Math.max(0, WINDOW_END-3);
+    return;
+  }
+  // normal case: open from (idx+1) to (idx+4)
+  WINDOW_START = idx+1;
+  WINDOW_END   = Math.min(POS.length-1, WINDOW_START+3);
+}
+
+function getStopState(i){
+  if(bryanMode) return 'active'; // BRYAN unlocks everything
+  if(i<WINDOW_START) return 'old';     // past weeks → black ring, no click
+  if(i>WINDOW_END)   return 'future';  // not yet released → hidden
+  return 'active';                     // within 4-week future window
+}
+
+const stops=[];
+POS.forEach((p,i)=>{
+  const el=document.createElement('div');
+  el.className='stop hidden';
+  el.style.left=p.x+'%';
+  el.style.top=p.y+'%';
+
+  // Make stop points clickable to open the weekly menu (only when active)
+  el.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    if(!el.classList.contains('active')) return;
+    onStopClick(i);
+  });
+
+  maze.appendChild(el);
+  stops.push({el,i});
+});
+
+function monthColor(i){return MONTH_COLORS[Math.floor(i/4)];}
+function placeBoohaXY(x,y){
+  booha.style.left=x+'px';
+  booha.style.top=y+'px';
+}
+function startPosition(){
+  const r=maze.getBoundingClientRect();
+  return{
+    x:r.left+window.scrollX+r.width*0.065,
+    y:r.top+window.scrollY+r.height*0.085
+  };
+}
+function stopPx(i,rect){
+  const n=POS[i];
+  return{
+    x:rect.left+(n.x/100)*rect.width+window.scrollX,
+    y:rect.top+(n.y/100)*rect.height+window.scrollY
+  };
+}
+function easeInOutCubic(t){
+  return t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+}
+function spawnSpark(x,y){
+  const s=document.createElement('i');
+  s.className='spark';
+  s.style.left=x+'px';
+  s.style.top=y+'px';
+  document.body.appendChild(s);
+  setTimeout(()=>s.remove(),1000);
+}
+
+// Faster, snappier fairy burst – called only for *new* weeks
+function fairyBurst(i){
+  const color=monthColor(i);
+  const rect=maze.getBoundingClientRect();
+  const {x:cx,y:cy}=stopPx(i,rect);
+  const count=140,radiusMin=30,radiusMax=180;
+  for(let n=0;n<count;n++){
+    const a=Math.random()*Math.PI*2;
+    const len=radiusMin+Math.pow(Math.random(),.5)*(radiusMax-radiusMin);
+    const dx=Math.cos(a)*len,dy=Math.sin(a)*len;
+    const tw=document.createElement('i');
+    tw.className='fairy';
+    tw.style.color=color;
+    tw.style.left=cx+'px';
+    tw.style.top=cy+'px';
+    tw.style.setProperty('--dx',dx+'px');
+    tw.style.setProperty('--dy',dy+'px');
+    const dur=1600+Math.random()*900; // ~1.6–2.5s
+    tw.style.setProperty('--dur',dur+'ms');
+    tw.style.animationDelay=(Math.random()*80)+'ms';
+    document.body.appendChild(tw);
+    setTimeout(()=>tw.remove(),dur+600);
+  }
+}
+
+function showCheckpoint(i){
+  const color=monthColor(i);
+  const el=stops[i].el;
+  el.classList.remove('hidden','old');
+  el.classList.add('active');
+  el.style.background=`radial-gradient(circle,${color} 0%,${color} 60%,#0000 100%)`;
+  el.style.boxShadow=`0 0 0 2px #0008 inset,0 0 18px ${color},0 0 38px ${color}`;
+}
+
+/* apply old/active/future styles based on date window */
+function applyStopStates(){
+  stops.forEach(({el,i})=>{
+    const state=getStopState(i);
+    el.classList.remove('hidden','active','old');
+    if(state==='future'){
+      el.classList.add('hidden');
+    }else if(state==='old'){
+      el.classList.add('old');
+      // styles handled by CSS .stop.old
+    }else{
+      showCheckpoint(i);
+    }
+  });
+}
+
+let currentIndex=-1,moving=false;
+
+function moveBoohaToXY(ex,ey){
+  return new Promise(resolve=>{
+    moving=true;
+    const rect=maze.getBoundingClientRect();
+    const sx=parseFloat(booha.style.left) || (rect.left+window.scrollX);
+    const sy=parseFloat(booha.style.top) || (rect.top+window.scrollY);
+    const dx=ex-sx,dy=ey-sy;
+    const dist=Math.hypot(dx,dy);
+    const dur=Math.max(5200,Math.min(14000,dist*6.5));
+    const t0=performance.now();
+    function step(t){
+      const k=Math.min(1,(t-t0)/dur);
+      const e=easeInOutCubic(k);
+      const x=sx+dx*e,y=sy+dy*e;
+      placeBoohaXY(x,y);
+      for(let n=0;n<2;n++){
+        if(Math.random()<.9)spawnSpark(x+(Math.random()*4-2),y+(Math.random()*4-2));
+      }
+      if(k<1)requestAnimationFrame(step);
+      else{
+        placeBoohaXY(ex,ey);
+        moving=false;
+        resolve();
+      }
+    }
+    requestAnimationFrame(step);
+  });
+}
+function moveBooha(i){
+  const rect=maze.getBoundingClientRect();
+  const {x,y}=stopPx(i,rect);
+  return moveBoohaToXY(x,y);
+}
+
+async function playCheckpoint(){
+  try{
+    sfxCheckpoint.currentTime=0;
+    await sfxCheckpoint.play();
+  }catch(e){}
+  await new Promise(r=>setTimeout(r,4000));
+}
+
+function setWindowTitles(i){
+  const m=Math.floor(i/4),w=(i%4)+1;
+  const color=monthColor(i);
+  titleEN.textContent=`${MONTHS_EN[m]} — Week ${w}`;
+  titleJP.textContent=`${MONTHS_JP[m]}　第${w}週`;
+  card.style.setProperty('--glow',color);
+}
+function openWindow(){
+  modal.classList.add('show');
+  card.style.animation='none';
+  void card.offsetWidth;
+  card.style.animation=null;
+}
+function closeWindow(){
+  modal.classList.remove('show');
+}
+
+// arriveAt: sound + glitter ONLY on first visit
+async function arriveAt(i){
+  const isNew=!visited[i];
+
+  if(isNew){
+    await playCheckpoint();
+    fairyBurst(i);
+    visited[i]=true;
+    saveVisited();
+
+    setTimeout(()=>{
+      setWindowTitles(i);
+      openWindow();
+    },2000);
+  }else{
+    setWindowTitles(i);
+    openWindow();
+  }
+}
+
+// Clicking an active stop → move (if needed) and open that week's menu
+async function onStopClick(i){
+  if(!gameStarted)return;
+  if(moving)return;
+  closeWindow();
+
+  const rect=maze.getBoundingClientRect();
+  const {x,y}=stopPx(i,rect);
+
+  // Only animate if Booha is not already at this stop
+  if(currentIndex!==i){
+    await moveBoohaToXY(x,y);
+    currentIndex=i;
+  }
+
+  await arriveAt(i);
+}
+
+async function goNext(){
+  if(!gameStarted)return;
+  if(moving)return;
+  closeWindow();
+
+  let next;
+  if(currentIndex<WINDOW_START || currentIndex>WINDOW_END){
+    next=WINDOW_START;
+  }else{
+    next=currentIndex+1;
+    if(next>WINDOW_END)next=WINDOW_START;
+  }
+
+  await moveBooha(next);
+  currentIndex=next;
+  await arriveAt(currentIndex);
+}
+
+function poofAtStart(){
+  const pos=startPosition();
+  const smoke=document.createElement('div');
+  smoke.className='smoke';
+  smoke.style.left=pos.x+'px';
+  smoke.style.top=pos.y+'px';
+  document.body.appendChild(smoke);
+  setTimeout(()=>smoke.remove(),1200);
+  booha.style.left=pos.x+'px';
+  booha.style.top=pos.y+'px';
+  booha.style.animation='glowPulse 2s ease-out';
+  setTimeout(()=>{
+    booha.style.opacity=1;
+    booha.classList.add('bobbing');
+  },400);
+}
+
+/* snap Booha back to current checkpoint when resized */
+function realignBoohaToCurrent(){
+  if(currentIndex<0)return;
+  const rect=maze.getBoundingClientRect();
+  const {x,y}=stopPx(currentIndex,rect);
+  placeBoohaXY(x,y);
+}
+
+/* Event wiring */
+
+// TEMP DEV: reset all visited checkpoints for testing
+resetTestBtn.onclick=()=>{
+  try{
+    localStorage.removeItem(VISITED_KEY);
+  }catch(e){}
+  location.reload();
+};
+
+closeModalBtn.onclick=(e)=>{
+  e.stopPropagation();
+  closeWindow();
+};
+
+/* BRYAN admin override */
+bryanBtn.onclick=()=>{
+  const pwd = prompt('Enter BRYAN password');
+  if(pwd===null) return;
+  if(pwd==='him141amra803'){
+    bryanMode=true;
+    applyStopStates();
+    alert('BRYAN mode: all weeks are open.');
+  }else{
+    alert('Incorrect password.');
+  }
+};
+
+/* Start button: begin BGM, poof Booha, move to current week */
+startBtn.onclick=()=>{
+  if(gameStarted)return;
+  gameStarted=true;
+  primeAudio();
+  closeWindow();
+  poofAtStart();
+
+  if(todayIndex<0 || todayIndex>=POS.length)return;
+  const rect=maze.getBoundingClientRect();
+  const {x,y}=stopPx(todayIndex,rect);
+
+  setTimeout(async ()=>{
+    await moveBoohaToXY(x,y);
+    currentIndex=todayIndex;
+    await arriveAt(currentIndex);
+  },1300);
+};
+
+/* Initial position + calendar window */
+window.onload=()=>{
+  const pos=startPosition();
+  placeBoohaXY(pos.x,pos.y);
+
+  todayIndex=getCurrentIndexFromDate();
+  updateWindowFromCurrentIndex(todayIndex);
+  applyStopStates();
+};
+
+/* Re-snap Booha when the layout changes on resize */
+window.addEventListener('resize',()=>{
+  requestAnimationFrame(realignBoohaToCurrent);
+});
+</script>
 </body>
 </html>
