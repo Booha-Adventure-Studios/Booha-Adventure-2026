@@ -311,6 +311,61 @@ html,body{
 </style>
 </head>
 <body>
+  </head>
+<body>
+
+  <!-- 🔥 Paste token check script HERE -->
+  <script>
+  (async function() {
+    const API_BASE = 'https://www.bryanharper.tokyo';
+    const ENTER_PAGE = 'https://www.bryanharper.tokyo/booha-gate';  // ← corrected
+
+    function kickOut(message) {
+      alert(message || 'Please log in through the Booha Gate.');
+      window.location.href = ENTER_PAGE;
+    }
+
+    // 1️⃣ Read ?token= from the URL
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    if (!token) {
+      kickOut('No session found. Please log in through the Booha Gate.');
+      return;
+    }
+
+    try {
+      // 2️⃣ Ask Wix if this token is valid
+      const res = await fetch(
+        API_BASE + '/_functions/verifyToken?token=' + encodeURIComponent(token),
+        { method: 'GET', headers: { 'Accept': 'application/json' } }
+      );
+
+      if (!res.ok) {
+        kickOut('Session check failed. Please log in again.');
+        return;
+      }
+
+      const data = await res.json();
+
+      if (!data.valid) {
+        kickOut('Your session has expired or is invalid. Please log in again.');
+        return;
+      }
+
+      // 3️⃣ Token OK → allow game to run
+      console.log('✅ Token valid — welcome to Booha Adventure');
+
+    } catch (err) {
+      console.error('Token verification error', err);
+      kickOut('There was a problem verifying your session. Please log in again.');
+    }
+  })();
+</script>
+
+
+  <!-- Now your adventure HTML continues normally... -->
+
 <div class="start-wrap">
   <button class="btn start-btn" id="start">Start</button>
 </div>
