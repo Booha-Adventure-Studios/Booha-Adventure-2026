@@ -100,26 +100,37 @@ html,body{
   100%{transform:translate(0,12px) scale(.7);opacity:0}
 }
 
-/* Fairy glitter (month color) */
+/* Fairy glitter (month color) – BIGGER explosion */
 .fairy{
   position:absolute;
-  width:5px;
-  height:5px;
+  width:6px;
+  height:6px;
   border-radius:50%;
   pointer-events:none;
   background:radial-gradient(circle,#fff 0%,currentColor 60%,transparent 80%);
-  box-shadow:0 0 10px currentColor,0 0 24px currentColor,0 0 40px currentColor;
+  box-shadow:0 0 10px currentColor,0 0 26px currentColor,0 0 46px currentColor;
   opacity:.9;
-  animation:drift var(--dur,5200ms) cubic-bezier(.2,.7,.1,1) forwards,twinkle .8s infinite alternate;
+  animation:drift var(--dur,2600ms) cubic-bezier(.2,.7,.1,1) forwards,twinkle .8s infinite alternate;
   z-index:20;
 }
 @keyframes drift{
   0%{transform:translate(-50%,-50%) scale(.9)}
-  100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.1);opacity:0}
+  100%{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1.15);opacity:0}
 }
 @keyframes twinkle{
   0%{filter:brightness(1)}
   100%{filter:brightness(1.8)}
+}
+
+/* Little maze shake on big explosion */
+@keyframes mazeShake{
+  0%,100%{transform:translate(0,0);}
+  25%{transform:translate(-2px,1px);}
+  50%{transform:translate(2px,-1px);}
+  75%{transform:translate(-1px,-2px);}
+}
+.viewport.shake{
+  animation:mazeShake 0.35s ease-out;
 }
 
 /* Checkpoints */
@@ -143,10 +154,8 @@ html,body{
   animation:pulse 2s ease-in-out infinite;
 }
 .stop.old{
-  opacity:1;
-  pointer-events:none;
-  background:#000;
-  box-shadow:0 0 0 2px #ffdf80,0 0 10px #ffdf80,0 0 24px #ffdf80;
+  opacity:.8;
+  pointer-events:auto;
 }
 @keyframes pulse{
   0%,100%{filter:brightness(1)}
@@ -242,7 +251,7 @@ html,body{
   color:#fff;
 }
 
-/* Bottom-left tools: BRYAN + RESET */
+/* Bottom-left tools: BRYAN only */
 .tools{
   position:fixed;
   left:12px;
@@ -262,6 +271,14 @@ html,body{
   font-size:13px;
 }
 .btn:hover{background:#25452f}
+
+/* Dim BRYAN admin button */
+.tools .btn{
+  opacity:.45;
+}
+.tools .btn:hover{
+  opacity:.9;
+}
 
 /* Start button (top-left) */
 .start-wrap{
@@ -304,13 +321,12 @@ html,body{
   </div>
 </div>
 
-<!-- Updated ghost image -->
+<!-- Booha ghost -->
 <img id="booha" src="assets/BoohaYellow.png" alt="booha"/>
 
-<!-- Bottom-left tools: BRYAN + RESET -->
+<!-- Bottom-left tools: BRYAN only -->
 <div class="tools">
   <button class="btn" id="bryanBtn">BRYAN</button>
-  <button class="btn" id="resetTest">RESET (TEST)</button>
 </div>
 
 <!-- Modal window -->
@@ -347,6 +363,7 @@ const MONTH_COLORS=[
   '#22D3EE'  // Dec - electric cyan
 ];
 
+// 48 weekly checkpoints (Jan–Dec, 4 per month)
 const POS = [
 /* 1 */ {"x":29.43,"y":6.82},
 /* 2 */ {"x":30.04,"y":55.60},
@@ -417,8 +434,8 @@ const titleEN=document.getElementById('title-en');
 const titleJP=document.getElementById('title-jp');
 const closeModalBtn=document.getElementById('close-modal');
 const startBtn=document.getElementById('start');
-const resetTestBtn=document.getElementById('resetTest');
 const bryanBtn=document.getElementById('bryanBtn');
+const viewport=document.getElementById('viewport');
 
 const bgm=new Audio('audio/sneaky.mp3');bgm.loop=true;
 const sfxCheckpoint=new Audio('audio/checkpoint.mp3');
@@ -452,56 +469,58 @@ function primeAudio(){
   bgm.play().catch(()=>{});
 }
 
-/* calendar / window logic */
+/* calendar / window logic (Booha Adventure 2026) */
+/* Unlock schedule:
+   - Week 1 unlocks on Sunday 2025-12-28
+   - Each following Sunday unlocks one more week
+   - At most 4 "live" weeks at a time:
+       past (dim)  | live (bright) | future (hidden)
+*/
 let todayIndex=0;
 let WINDOW_START=0,WINDOW_END=0;
 
+// Sunday 2025-12-28 (months are 0-based: 11 = December)
+const UNLOCK_START = new Date(2025, 11, 28);
+
 function getCurrentIndexFromDate(){
   const now=new Date();
-  const year=now.getFullYear();
-  let month=now.getMonth(); // 0-11
+  const todayMidnight=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const startMidnight=new Date(UNLOCK_START.getFullYear(),UNLOCK_START.getMonth(),UNLOCK_START.getDate());
+  const diffMs=todayMidnight-startMidnight;
+  const dayMs=86400000;
 
-  // First day of month
-  const firstOfMonth=new Date(year,month,1);
-  const day=firstOfMonth.getDay(); // 0=Sun,1=Mon,...
-  const firstMonday=new Date(firstOfMonth);
-  const offset=(1-day+7)%7; // days from firstOfMonth to first Monday
-  firstMonday.setDate(1+offset);
-
-  let week=1;
-  if(now<firstMonday){
-    week=1;
-  }else{
-    const diffMs=now-firstMonday;
-    const diffDays=Math.floor(diffMs/86400000);
-    week=1+Math.floor(diffDays/7);
-    if(week>4)week=4;
+  if(diffMs<0){
+    // Before Booha Adventure opens: no weeks visible
+    return -1;
   }
 
-  let idx=month*4+(week-1);
-  if(idx<0)idx=0;
-  if(idx>=POS.length)idx=POS.length-1;
+  const diffDays=Math.floor(diffMs/dayMs);
+  const weeksUnlocked=Math.floor(diffDays/7)+1; // 1-based count
+  let idx=weeksUnlocked-1; // last unlocked index (0-based)
+
+  if(idx>=POS.length) idx=POS.length-1;
   return idx;
 }
 
-// 4-week window starting 1 week in the future
+// 4-week window ending at the most recently unlocked week
 function updateWindowFromCurrentIndex(idx){
-  // if we're already at or beyond the last week, show the last 4 weeks
-  if(idx >= POS.length-1){
-    WINDOW_END = POS.length-1;
-    WINDOW_START = Math.max(0, WINDOW_END-3);
+  if(idx<0){
+    WINDOW_START=-1;
+    WINDOW_END=-1;
     return;
   }
-  // normal case: open from (idx+1) to (idx+4)
-  WINDOW_START = idx+1;
-  WINDOW_END   = Math.min(POS.length-1, WINDOW_START+3);
+  WINDOW_END=idx;
+  WINDOW_START=Math.max(0,WINDOW_END-3);
 }
 
+// Determine stop state: past (dim), live (bright), future (hidden)
 function getStopState(i){
-  if(bryanMode) return 'active'; // BRYAN unlocks everything
-  if(i<WINDOW_START) return 'old';     // past weeks → black ring, no click
-  if(i>WINDOW_END)   return 'future';  // not yet released → hidden
-  return 'active';                     // within 4-week future window
+  if(bryanMode) return 'live';
+  if(todayIndex<0) return 'future';
+
+  if(i<WINDOW_START) return 'past';
+  if(i<=WINDOW_END) return 'live';
+  return 'future';
 }
 
 const stops=[];
@@ -511,10 +530,10 @@ POS.forEach((p,i)=>{
   el.style.left=p.x+'%';
   el.style.top=p.y+'%';
 
-  // Make stop points clickable to open the weekly menu (only when active)
+  // Make stop points clickable to open the weekly menu (only when active/past/live)
   el.addEventListener('click',(e)=>{
     e.stopPropagation();
-    if(!el.classList.contains('active')) return;
+    if(!el.classList.contains('active') && !el.classList.contains('old')) return;
     onStopClick(i);
   });
 
@@ -523,6 +542,7 @@ POS.forEach((p,i)=>{
 });
 
 function monthColor(i){return MONTH_COLORS[Math.floor(i/4)];}
+
 function placeBoohaXY(x,y){
   booha.style.left=x+'px';
   booha.style.top=y+'px';
@@ -553,15 +573,20 @@ function spawnSpark(x,y){
   setTimeout(()=>s.remove(),1000);
 }
 
-// Faster, snappier fairy burst – called only for *new* weeks
+// BIGGER, brighter fairy burst – only for *new* checkpoints
 function fairyBurst(i){
   const color=monthColor(i);
   const rect=maze.getBoundingClientRect();
   const {x:cx,y:cy}=stopPx(i,rect);
-  const count=140,radiusMin=30,radiusMax=180;
+  const count=220, radiusMin=50, radiusMax=260;
+
+  // little shake
+  viewport.classList.add('shake');
+  setTimeout(()=>viewport.classList.remove('shake'),380);
+
   for(let n=0;n<count;n++){
     const a=Math.random()*Math.PI*2;
-    const len=radiusMin+Math.pow(Math.random(),.5)*(radiusMax-radiusMin);
+    const len=radiusMin+Math.pow(Math.random(),.6)*(radiusMax-radiusMin);
     const dx=Math.cos(a)*len,dy=Math.sin(a)*len;
     const tw=document.createElement('i');
     tw.className='fairy';
@@ -570,35 +595,50 @@ function fairyBurst(i){
     tw.style.top=cy+'px';
     tw.style.setProperty('--dx',dx+'px');
     tw.style.setProperty('--dy',dy+'px');
-    const dur=1600+Math.random()*900; // ~1.6–2.5s
+    const dur=2100+Math.random()*1200; // ~2.1–3.3s
     tw.style.setProperty('--dur',dur+'ms');
-    tw.style.animationDelay=(Math.random()*80)+'ms';
+    tw.style.animationDelay=(Math.random()*120)+'ms';
     document.body.appendChild(tw);
-    setTimeout(()=>tw.remove(),dur+600);
+    setTimeout(()=>tw.remove(),dur+700);
   }
 }
 
-function showCheckpoint(i){
-  const color=monthColor(i);
-  const el=stops[i].el;
+/* live / past styling */
+function styleLive(el,color){
   el.classList.remove('hidden','old');
   el.classList.add('active');
+  el.style.opacity=1;
+  el.style.pointerEvents='auto';
   el.style.background=`radial-gradient(circle,${color} 0%,${color} 60%,#0000 100%)`;
   el.style.boxShadow=`0 0 0 2px #0008 inset,0 0 18px ${color},0 0 38px ${color}`;
 }
 
-/* apply old/active/future styles based on date window */
+function stylePast(el,color){
+  el.classList.remove('hidden','active');
+  el.classList.add('old');
+  el.style.opacity=0.8;
+  el.style.pointerEvents='auto';
+  el.style.background=`radial-gradient(circle,${color}33 0%,${color}55 60%,#0000 100%)`;
+  el.style.boxShadow=`0 0 0 1px #ffffff10,0 0 10px ${color}55,0 0 22px ${color}55`;
+}
+
+/* apply past/live/future styles based on date window */
 function applyStopStates(){
   stops.forEach(({el,i})=>{
     const state=getStopState(i);
+    const color=monthColor(i);
     el.classList.remove('hidden','active','old');
+
     if(state==='future'){
       el.classList.add('hidden');
-    }else if(state==='old'){
-      el.classList.add('old');
-      // styles handled by CSS .stop.old
-    }else{
-      showCheckpoint(i);
+      el.style.opacity=0;
+      el.style.pointerEvents='none';
+      el.style.background='transparent';
+      el.style.boxShadow='none';
+    }else if(state==='past'){
+      stylePast(el,color);
+    }else{ // live
+      styleLive(el,color);
     }
   });
 }
@@ -664,7 +704,7 @@ function closeWindow(){
   modal.classList.remove('show');
 }
 
-// arriveAt: sound + glitter ONLY on first visit
+// arriveAt: sound + BIG explosion ONLY on first visit
 async function arriveAt(i){
   const isNew=!visited[i];
 
@@ -684,7 +724,7 @@ async function arriveAt(i){
   }
 }
 
-// Clicking an active stop → move (if needed) and open that week's menu
+// Clicking a live/past stop → move (if needed) and open that week's menu
 async function onStopClick(i){
   if(!gameStarted)return;
   if(moving)return;
@@ -746,15 +786,6 @@ function realignBoohaToCurrent(){
 }
 
 /* Event wiring */
-
-// TEMP DEV: reset all visited checkpoints for testing
-resetTestBtn.onclick=()=>{
-  try{
-    localStorage.removeItem(VISITED_KEY);
-  }catch(e){}
-  location.reload();
-};
-
 closeModalBtn.onclick=(e)=>{
   e.stopPropagation();
   closeWindow();
@@ -773,7 +804,7 @@ bryanBtn.onclick=()=>{
   }
 };
 
-/* Start button: begin BGM, poof Booha, move to current week */
+/* Start button: begin BGM, poof Booha, move to current (latest unlocked) week */
 startBtn.onclick=()=>{
   if(gameStarted)return;
   gameStarted=true;
@@ -788,7 +819,7 @@ startBtn.onclick=()=>{
   setTimeout(async ()=>{
     await moveBoohaToXY(x,y);
     currentIndex=todayIndex;
-    await arriveAt(currentIndex);
+    await arriveAt(currentIndex); // first checkpoint also explodes
   },1300);
 };
 
