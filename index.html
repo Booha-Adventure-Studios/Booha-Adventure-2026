@@ -315,61 +315,85 @@ html,body{
 <body>
 
   <!-- 🔥 Paste token check script HERE -->
- <script>
+<script>
   (async function() {
     const API_BASE = 'https://www.bryanharper.tokyo';
-    const ENTER_PAGE = 'https://www.bryanharper.tokyo/booha-gate';
+    const GATE_URL = 'https://www.bryanharper.tokyo/booha-gate';
 
     function kickOut(message) {
-      console.warn('[Booha Adventure] KICK OUT:', message);
-      alert(message || 'Please log in through the Booha Gate.');
-      window.location.href = ENTER_PAGE;
+      alert(message || 'Your session has expired. Please log in again.\n\nもう一度ブーハーゲートからログインしてください。');
+      window.location.href = GATE_URL;
     }
 
-    // 1️⃣ Read ?token= from the URL
+    // 1) Read ?token= from URL
     const params = new URLSearchParams(window.location.search);
     const token = params.get('token');
 
-    console.log('[Booha Adventure] URL token =', token);
+    console.log('[Booha Adventure] Token from URL:', token);
 
     if (!token) {
-      kickOut('No session found. Please log in through the Booha Gate.');
+      kickOut('No session found. Please log in through the Booha Gate.\n\nブーハーゲートからログインしてください。');
       return;
     }
 
     try {
-      // 2️⃣ Ask Wix if this token is valid
+      // 2) Ask Wix if token is valid
       const url = API_BASE + '/_functions/verifyToken?token=' + encodeURIComponent(token);
-      console.log('[Booha Adventure] Calling verifyToken:', url);
+      console.log('[Booha Adventure] Calling:', url);
 
       const res = await fetch(url, {
         method: 'GET',
         headers: { 'Accept': 'application/json' }
       });
 
-      console.log('[Booha Adventure] verifyToken status:', res.status);
-
       if (!res.ok) {
-        kickOut('Session check failed. Please log in again.');
+        console.warn('[Booha Adventure] verifyToken HTTP error status:', res.status);
+        kickOut('Session check failed. Please log in again.\n\nセッションの確認に失敗しました。もう一度ログインしてください。');
         return;
       }
 
       const data = await res.json();
-      console.log('[Booha Adventure] verifyToken response JSON:', data);
+      console.log('[Booha Adventure] verifyToken response:', data);
 
       if (!data.valid) {
-        kickOut('Your session has expired or is invalid. Please log in again.');
+        if (data.expired) {
+          kickOut('Your session has expired. Please log in again.\n\nセッションの有効期限が切れました。もう一度ログインしてください。');
+        } else {
+          kickOut('Your session is invalid. Please log in again.\n\nセッションが無効です。もう一度ログインしてください。');
+        }
         return;
       }
 
-      // 3️⃣ Token OK → allow game to run
-      console.log('✅ Token valid — welcome to Booha Adventure');
+      // 3) Token OK — optionally show a welcome message
+      console.log('✅ Token valid — welcome', data.firstName, data.lastName, 'role:', data.role);
+
+      // Auto-logout after expiry (option A — strictly log them out when 6 hours pass)
+      if (data.expiresAt) {
+        const now = new Date();
+        const expiresAt = new Date(data.expiresAt);
+        const msRemaining = expiresAt.getTime() - now.getTime();
+
+        console.log('[Booha Adventure] ms remaining until expiry:', msRemaining);
+
+        if (msRemaining > 0) {
+          setTimeout(() => {
+            kickOut('Your session has expired. Please log in again.\n\nセッションの有効期限が切れました。もう一度ログインしてください。');
+          }, msRemaining);
+        } else {
+          // Already expired by the time we checked
+          kickOut('Your session has expired. Please log in again.\n\nセッションの有効期限が切れました。もう一度ログインしてください。');
+        }
+      }
+
+      // After this, the rest of your maze script runs as normal
+
     } catch (err) {
-      console.error('Token verification error', err);
-      kickOut('There was a problem verifying your session. Please log in again.');
+      console.error('[Booha Adventure] Token verification error:', err);
+      kickOut('There was a problem verifying your session. Please log in again.\n\nセッションの確認中に問題が発生しました。もう一度ログインしてください。');
     }
   })();
 </script>
+
 
   <!-- Now your adventure HTML continues normally... -->
 
