@@ -447,6 +447,52 @@ html,body{
   })();
 </script>
 
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  // 1. Get token from current URL
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  console.log('[Booha Adventure → Boo-Riculum] token:', token);
+
+  // 2. Base Boo-Riculum URL
+  const booRicBase = 'https://booha-adventure-studios.github.io/Boo-Riculum-2026/';
+
+  // 3. Find the Boo-Riculum tree clickable element
+  // (Change this selector to match your actual element)
+  const booRicLink = document.getElementById('booRicTreeLink');
+
+  if (!booRicLink) {
+    console.warn('❌ Could not find #booRicTreeLink');
+    return;
+  }
+
+  // 4. If we have a token, attach it to the Boo-Riculum URL
+  if (token) {
+    const targetUrl = booRicBase + '?token=' + encodeURIComponent(token);
+    console.log('[Booha Adventure → Boo-Riculum] URL with token:', targetUrl);
+
+    // If it's an <a>, set href:
+    if ('href' in booRicLink) {
+      booRicLink.href = targetUrl;
+    } else {
+      // If it's a div or img, use click handler:
+      booRicLink.addEventListener('click', () => {
+        window.location.href = targetUrl;
+      });
+    }
+
+  } else {
+    // 5. If no token, block access
+    booRicLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      alert('No session found. Please log in through the Booha Gate.\n\nセッションがありません。まずブーハーゲートからログインしてください。');
+      window.location.href = 'https://www.bryanharper.tokyo/booha-gate';
+    });
+  }
+});
+</script>
+  
+
 <!-- Now your adventure HTML continues normally... -->
 
 <div class="start-wrap">
