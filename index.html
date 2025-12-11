@@ -53,7 +53,7 @@ html,body{
   left:83.84%;
   top:8.40%;
   transform:translate(-50%, -50%);
-  width:13%;              /* not gigantic */
+  width:15%;              /* not gigantic */
   aspect-ratio:1 / 1;
   opacity:0;
   cursor:pointer;
@@ -65,12 +65,12 @@ html,body{
   filter:drop-shadow(0 0 4px #00ffaa40);
 }
 
-#booTree.glow{
-  opacity:1;
-  filter:
-    drop-shadow(0 0 8px #00ffcc80)
-    drop-shadow(0 0 14px #00ffcc60);
+#booTree.glow {
+  opacity: 1;
+  filter: drop-shadow(0 0 8px #00ffcc88);
+  animation: treeFlicker 2.6s infinite;
 }
+
 
 /* Booha */
 #booha{
@@ -169,6 +169,20 @@ html,body{
   75%{transform:translate(-1px,-2px);}
 }
 
+@keyframes treeFlicker {
+  0%   { filter: drop-shadow(0 0 6px #00ffcc40); }
+  8%   { filter: drop-shadow(0 0 10px #00ffcc90); }
+  15%  { filter: drop-shadow(0 0 7px #00ffcc50); }
+  22%  { filter: drop-shadow(0 0 12px #00ffeecc); }
+  32%  { filter: drop-shadow(0 0 8px #00ffcc60); }
+  45%  { filter: drop-shadow(0 0 14px #00ffeeee); }
+  58%  { filter: drop-shadow(0 0 7px #00ffcc40); }
+  72%  { filter: drop-shadow(0 0 11px #00ffeecc); }
+  90%  { filter: drop-shadow(0 0 9px #00ffcc70); }
+  100% { filter: drop-shadow(0 0 6px #00ffcc40); }
+}
+
+  
 .viewport.shake{
   animation:mazeShake 0.35s ease-out;
 }
