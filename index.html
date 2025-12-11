@@ -35,6 +35,8 @@ html,body{
   transform:translate(calc(-50% + var(--tx)),calc(-50% + var(--ty))) scale(var(--zoom));
   transform-origin:center;
   transition:transform .65s cubic-bezier(.22,.65,.2,1);
+  <img id="booTree" src="assets/BooTree.png" alt="boo tree">
+
 }
 
 /* Maze locked to 1024×1536 (2:3) image */
@@ -260,6 +262,39 @@ html,body{
   font-weight:700;
 }
 
+ /* ⭐ Add this block right here ⭐ */
+.wakaba-icon{
+  width:10px;   /* adjust if needed */
+  height:10px;
+  object-fit:contain;
+  display:inline-block;
+  vertical-align:middle;
+  image-rendering:crisp-edges;
+  pointer-events:none;
+} 
+
+ /* Boo-riculum Tree */
+#booTree{
+  position:absolute;
+  width: 7%; /* adjust size here — not too big */
+  aspect-ratio: 1 / 1;
+  transform: translate(-50%, -50%);
+  opacity:0;
+  cursor:pointer;
+  z-index:15;
+
+  transition:
+    opacity 1s ease-out,
+    filter 1.5s ease-out;
+
+  filter: drop-shadow(0 0 0px #00ffaa);
+}
+
+#booTree.glow{
+  opacity:1;
+  filter: drop-shadow(0 0 12px #00ffcc) drop-shadow(0 0 24px #00ffcc);
+}
+ 
 /* ⭐⭐  PASTE STEP 2 CSS RIGHT HERE  ⭐⭐ */
 
 .card .hint{
@@ -1001,6 +1036,35 @@ window.addEventListener('resize',()=>{
   requestAnimationFrame(realignBoohaToCurrent);
 });
 
+  // -----------------------------
+// Boo-riculum Tree Setup
+// -----------------------------
+const booTree = document.getElementById("booTree");
+
+// Position on the maze using % coordinates
+function positionBooTree(){
+  const rect = maze.getBoundingClientRect();
+  const x = rect.left + rect.width * (83.84 / 100);
+  const y = rect.top + rect.height * (8.40 / 100);
+
+  booTree.style.left = x + "px";
+  booTree.style.top = y + "px";
+}
+
+// click → open Boo-riculum in new tab
+booTree.onclick = () => {
+  window.open("https://booha-adventure-studios.github.io/Boo-Riculum-2026/", "_blank");
+};
+
+// Fade-in + glow (after 1.5 seconds)
+setTimeout(() => {
+  booTree.classList.add("glow");
+}, 1500);
+
+// Position when loading
+window.addEventListener("load", positionBooTree);
+// Keep aligned when resizing
+window.addEventListener("resize", positionBooTree);
 /* --------------------------------------
    DECK BUTTON CLICK HANDLERS (Add GitHub URLs Later)
 -------------------------------------- */
