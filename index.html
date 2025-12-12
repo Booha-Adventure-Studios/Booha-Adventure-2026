@@ -371,6 +371,7 @@ html,body{
 </style>
 </head>
 <body>
+  
 <!-- 🔥 Token check script -->
 <script>
   (async function() {
@@ -424,6 +425,14 @@ html,body{
 
       console.log('✅ Token valid — welcome', data.firstName, data.lastName, 'role:', data.role);
 
+      // 👉 NEW: remember the token for this browser session
+      try {
+        sessionStorage.setItem('boohaToken', token);
+        console.log('[Booha Adventure] stored token in sessionStorage');
+      } catch (e) {
+        console.warn('[Booha Adventure] could not access sessionStorage:', e);
+      }
+
       if (data.expiresAt) {
         const now = new Date();
         const expiresAt = new Date(data.expiresAt);
@@ -446,6 +455,7 @@ html,body{
     }
   })();
 </script>
+
 
 <script>
 window.addEventListener('DOMContentLoaded', () => {
