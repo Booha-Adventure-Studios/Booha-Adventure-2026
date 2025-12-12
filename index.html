@@ -458,48 +458,66 @@ html,body{
 
 <script>
 window.addEventListener('DOMContentLoaded', () => {
-  // 1. Get token from current URL
   const params = new URLSearchParams(window.location.search);
   const token = params.get('token');
   console.log('[Booha Adventure → Boo-Riculum] token:', token);
 
-  // 2. Base Boo-Riculum URL
   const booRicBase = 'https://booha-adventure-studios.github.io/Boo-Riculum-2026/';
 
-  // 3. Find the Boo-Riculum tree clickable element
-  // (Change this selector to match your actual element)
-  const booRicLink = document.getElementById('booRicTreeLink');
+  // 1) Prefer an existing <a> that points to Boo-Riculum
+  let booRicLink = document.querySelector('a[href*="Boo-Riculum-2026"]');
+
+  // 2) Fallback: maybe the tree itself is clickable (img/div)
+  const booTree = document.getElementById('booTree');
+  if (!booRicLink && booTree) {
+    booRicLink = booTree;
+  }
 
   if (!booRicLink) {
-    console.warn('❌ Could not find #booRicTreeLink');
+    console.warn('❌ Could not find a Boo-Riculum link or #booTree element');
     return;
   }
 
-  // 4. If we have a token, attach it to the Boo-Riculum URL
+  // If we DO have a token, build the target URL
   if (token) {
-    const targetUrl = booRicBase + '?token=' + encodeURIComponent(token);
+    const targetUrl =
+      booRicBase +
+      (booRicBase.includes('?') ? '&' : '?') +
+      'token=' + encodeURIComponent(token);
+
     console.log('[Booha Adventure → Boo-Riculum] URL with token:', targetUrl);
 
-    // If it's an <a>, set href:
-    if ('href' in booRicLink) {
+    // If it's an actual <a>, overwrite its href
+    if (booRicLink.tagName && booRicLink.tagName.toLowerCase() === 'a') {
       booRicLink.href = targetUrl;
     } else {
-      // If it's a div or img, use click handler:
+      // Otherwise, use a click handler (for img/div)
+      booRicLink.style.cursor = 'pointer';
       booRicLink.addEventListener('click', () => {
         window.location.href = targetUrl;
       });
     }
-
   } else {
-    // 5. If no token, block access
-    booRicLink.addEventListener('click', (e) => {
-      e.preventDefault();
-      alert('No session found. Please log in through the Booha Gate.\n\nセッションがありません。まずブーハーゲートからログインしてください。');
+    // No token at all → always send them back to Gate
+    const handler = (e) => {
+      if (e) e.preventDefault();
+      alert(
+        'No session found. Please log in through the Booha Gate.\n\n' +
+        'セッションがありません。まずブーハーゲートからログインしてください。'
+      );
       window.location.href = 'https://www.bryanharper.tokyo/booha-gate';
-    });
+    };
+
+    if (booRicLink.tagName && booRicLink.tagName.toLowerCase() === 'a') {
+      booRicLink.addEventListener('click', handler);
+    } else {
+      booRicLink.style.cursor = 'pointer';
+      booRicLink.addEventListener('click', handler);
+    }
   }
 });
 </script>
+
 
 
 <!-- Now your adventure HTML continues normally... -->
