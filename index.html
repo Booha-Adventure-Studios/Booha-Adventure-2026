@@ -564,6 +564,23 @@ window.addEventListener('DOMContentLoaded', () => {
 // BOOHA MAZE — FULL SCRIPT WITH BRYAN MODE + TREE + COORDS
 // ----------------------------------------------------------
 
+/* ==============================
+   DECK LINKS (EDIT THIS ONLY)
+   index = checkpoint number
+   ============================== */
+const DECK_LINKS = [
+  {
+    // January — Week 1 (index 0)
+    study: "https://booha-adventure-studios.github.io/booha-study-decks/january/week1/",
+    games: "https://booha-adventure-studios.github.io/january-booha-adventure-deck/week1/"
+  }
+];
+
+// remembers which checkpoint opened the popup
+let currentStopForModal = 0;
+
+
+  
 /* --------------------------------------
    Basic Constants
 -------------------------------------- */
@@ -897,6 +914,7 @@ function openWindow(){
 function closeWindow(){ modal.classList.remove('show'); }
 
 async function arriveAt(i){
+  currentStopForModal = i;
   const isNew = !visited[i];
 
   if(isNew){
@@ -1078,15 +1096,33 @@ window.addEventListener('resize',()=>{
 });
 
 /* --------------------------------------
-   DECK BUTTON CLICK HANDLERS (Add GitHub URLs later)
+   DECK BUTTON CLICK HANDLERS (uses DECK_LINKS + token carry-over)
 -------------------------------------- */
-document.getElementById("deck-study").onclick = ()=>{
-  alert("Study Deck URL coming soon!");
-};
+function getToken(){
+  const params = new URLSearchParams(window.location.search);
+  return params.get("token") || sessionStorage.getItem("boohaToken") || "";
+}
 
-document.getElementById("deck-games").onclick = ()=>{
-  alert("Games URL coming soon!");
-};
+function withToken(url, token){
+  if(!url) return "";
+  if(!token) return url;
+  return url + (url.includes("?") ? "&" : "?") + "token=" + encodeURIComponent(token);
+}
+
+function goToDeck(which){
+  const row = DECK_LINKS[currentStopForModal];
+  const baseUrl = row ? row[which] : "";
+  if(!baseUrl){
+    alert("Link not set for this checkpoint yet!");
+    return;
+  }
+  const token = getToken();
+  window.location.href = withToken(baseUrl, token);
+}
+
+document.getElementById("deck-study").onclick = ()=> goToDeck("study");
+document.getElementById("deck-games").onclick = ()=> goToDeck("games");
+
 
 /* --------------------------------------
    BRYAN MODE — COORDINATE TOOL
