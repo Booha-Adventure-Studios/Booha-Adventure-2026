@@ -609,6 +609,25 @@ const DECK_LINKS = [
   }
 ];
 
+ /* ==============================
+   MAP OBJECTS (TREES / SIGNS / MONTH MARKERS)
+   - x,y are percent coordinates in the maze
+   - href is a clean URL (token appended automatically)
+   ============================== */
+const MAP_OBJECTS = [
+  {
+    id: "review-jan",
+    type: "tree",
+    x: 20.5,
+    y: 35.2,
+    img: "assets/ReviewTree_Jan.png",
+    wPct: 14,              // width as % of maze width
+    open: "same-tab",      // or "new-tab"
+    href: "https://.../january-review/"
+  },
+  // add more objects here...
+];
+ 
 
 /* ============================================================
    🔒 ENGINE ZONE (DO NOT EDIT)
