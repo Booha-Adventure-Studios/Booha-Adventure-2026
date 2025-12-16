@@ -71,6 +71,17 @@ html,body{
   animation: treeFlicker 4s infinite;
 }
 
+/* FX layer for explosions / sparkles (iOS safe) */
+#fxLayer{
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  z-index:9999;
+  overflow:visible;
+  contain:layout paint;
+}
+
+
 
 /* Booha */
 #booha{
@@ -335,7 +346,7 @@ html,body{
 .tools .btn:hover{
   opacity:.9;
 }
-
+  
 /* Start button */
 .start-wrap{
   position:fixed;
@@ -359,7 +370,7 @@ html,body{
 }
 </style>
 </head>
-<body>
+</body>
 
 <!-- 🔥 Token check script -->
 <script>
@@ -778,40 +789,57 @@ function spawnSpark(x,y){
    BIG Explosion (iOS tuned)
 -------------------------------------- */
 function fairyBurst(i){
-  const color=monthColor(i);
-  const rect=maze.getBoundingClientRect();
-  const {x:cx,y:cy}=stopPx(i,rect);
+  const color = monthColor(i);
+
+  // page coords (because stopPx adds scrollX/scrollY)
+  const rect = maze.getBoundingClientRect();
+  const { x: cxPage, y: cyPage } = stopPx(i, rect);
+
+  // convert to viewport coords for a fixed layer
+  const sx = window.pageXOffset || document.documentElement.scrollLeft || 0;
+  const sy = window.pageYOffset || document.documentElement.scrollTop || 0;
+  const cx = cxPage - sx;
+  const cy = cyPage - sy;
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-  const count = isIOS ? 120 : 220;
-  const radiusMin = isIOS ? 40 : 50;
-  const radiusMax = isIOS ? 180 : 260;
+
+  // iOS: fewer nodes + shorter radius = much more reliable
+  const count = isIOS ? 56 : 180;
+  const radiusMin = isIOS ? 30 : 50;
+  const radiusMax = isIOS ? 140 : 260;
 
   viewport.classList.add('shake');
-  setTimeout(()=>viewport.classList.remove('shake'),380);
+  setTimeout(()=>viewport.classList.remove('shake'), 380);
+
+  const layer = document.getElementById('fxLayer') || document.body;
+  const frag = document.createDocumentFragment();
 
   for(let n=0;n<count;n++){
-    const a=Math.random()*Math.PI*2;
-    const len=radiusMin + Math.pow(Math.random(),.6)*(radiusMax-radiusMin);
-    const dx=Math.cos(a)*len,dy=Math.sin(a)*len;
+    const a = Math.random() * Math.PI * 2;
+    const len = radiusMin + Math.pow(Math.random(), .6) * (radiusMax - radiusMin);
+    const dx = Math.cos(a) * len;
+    const dy = Math.sin(a) * len;
 
-    const tw=document.createElement('i');
-    tw.className='fairy';
-    tw.style.color=color;
-    tw.style.left=cx+'px';
-    tw.style.top=cy+'px';
+    const tw = document.createElement('i');
+    tw.className = 'fairy';
+    tw.style.color = color;
+    tw.style.left = cx + 'px';
+    tw.style.top  = cy + 'px';
 
-    tw.style.setProperty('--dx',dx+'px');
-    tw.style.setProperty('--dy',dy+'px');
+    tw.style.setProperty('--dx', dx + 'px');
+    tw.style.setProperty('--dy', dy + 'px');
 
-    const dur = isIOS ? 1700+Math.random()*900 : 2100+Math.random()*1200;
-    tw.style.setProperty('--dur', dur+'ms');
-    tw.style.animationDelay=(Math.random()*120)+'ms';
+    const dur = isIOS ? (1400 + Math.random()*700) : (2100 + Math.random()*1200);
+    tw.style.setProperty('--dur', dur + 'ms');
+    tw.style.animationDelay = (Math.random()*90) + 'ms';
 
-    document.body.appendChild(tw);
-    setTimeout(()=>tw.remove(),dur+700);
+    frag.appendChild(tw);
+    setTimeout(()=>tw.remove(), dur + 700);
   }
+
+  layer.appendChild(frag);
 }
+
 
 /* --------------------------------------
    Style Stop States
@@ -1224,9 +1252,14 @@ function coordClick(e){
   marker.style.zIndex="9998";
   marker.style.pointerEvents="none";
 
-  document.body.appendChild(marker);
-  coordMarkers.push(marker);
+document.body.appendChild(marker);
+coordMarkers.push(marker);
 }
 </script>
+
+<!-- FX layer for explosions / sparkles -->
+<div id="fxLayer" aria-hidden="true"></div>
+
 </body>
 </html>
+
