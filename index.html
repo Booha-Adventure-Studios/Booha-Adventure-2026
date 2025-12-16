@@ -1170,6 +1170,45 @@ startBtn.onclick=()=>{
 };
 
 /* --------------------------------------
+   MAP OBJECTS — SPAWNER (one-time engine hook)
+-------------------------------------- */
+function spawnMapObjects(){
+  if(!maze || !Array.isArray(MAP_OBJECTS)) return;
+
+  const token = getToken(); // uses your existing helper
+
+  MAP_OBJECTS.forEach(obj=>{
+    if(!obj || !obj.img || typeof obj.x!=="number" || typeof obj.y!=="number") return;
+
+    const el = document.createElement("img");
+    el.className = "mapObj glow";
+    el.id = obj.id || ("mapobj-" + Math.random().toString(16).slice(2));
+    el.src = obj.img;
+    el.alt = obj.id || "map object";
+
+    el.style.left = obj.x + "%";
+    el.style.top  = obj.y + "%";
+    el.style.width = (obj.wPct || 14) + "%";
+    el.style.height = "auto";
+
+    el.addEventListener("click", (e)=>{
+      e.stopPropagation();
+      if(!obj.href){
+        alert("Link not set yet!");
+        return;
+      }
+      const target = withToken(obj.href, token); // uses your existing helper
+      if(obj.open === "new-tab") window.open(target, "_blank");
+      else window.location.href = target;
+    });
+
+    maze.appendChild(el);
+  });
+}
+
+
+  
+/* --------------------------------------
    Initial Setup
 -------------------------------------- */
 window.onload=()=>{
@@ -1179,6 +1218,8 @@ window.onload=()=>{
   todayIndex=getCurrentIndexFromDate();
   updateWindowFromCurrentIndex(todayIndex);
   applyStopStates();
+spawnMapObjects(); // ✅ add this line
+
 
   // BooTree glow + link
   if(booTree){
