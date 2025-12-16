@@ -563,7 +563,14 @@ window.addEventListener('DOMContentLoaded', () => {
 // ----------------------------------------------------------
 // BOOHA MAZE — FULL SCRIPT WITH BRYAN MODE + TREE + COORDS
 // ----------------------------------------------------------
-
+/* ============================================================
+   ✅ WEEKLY EDIT ZONE (THIS IS THE ONLY PART YOU EDIT)
+   ------------------------------------------------------------
+   - Add / update Study + Games links here.
+   - index 0 = January Week 1, index 1 = January Week 2, etc.
+   - DO NOT put tokens in these URLs.
+   - Tokens are appended automatically when buttons are clicked.
+   ============================================================ */
 /* ==============================
    DECK LINKS (EDIT THIS ONLY)
    index = checkpoint number
@@ -576,7 +583,17 @@ const DECK_LINKS = [
   }
 ];
 
+/* ============================================================
+   🔒 ENGINE ZONE (DO NOT EDIT)
+   ------------------------------------------------------------
+   Everything below is the Booha Adventure engine:
+   movement, checkpoints, explosions, window titles, etc.
+   If something breaks, it’s usually NOT in this section.
+   ============================================================ */
+  
 // remembers which checkpoint opened the popup
+  // (engine state — do not edit)
+
 let currentStopForModal = 0;
 
 
