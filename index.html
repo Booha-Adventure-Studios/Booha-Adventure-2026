@@ -71,6 +71,23 @@ html,body{
   animation: treeFlicker 4s infinite;
 }
 
+/* --------------------------------------
+   MAP OBJECTS (Trees / Review Decks)
+-------------------------------------- */
+.mapObj{
+  position:absolute;
+  transform:translate(-50%,-50%);
+  cursor:pointer;
+  z-index:15;
+  filter:drop-shadow(0 0 5px #00ffaa40);
+}
+
+.mapObj.glow{
+  animation:treeFlicker 4s infinite;
+  filter:drop-shadow(0 0 10px #00ffccaa);
+}
+
+  
 /* FX layer for explosions / sparkles (iOS safe) */
 #fxLayer{
   position:fixed;
