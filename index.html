@@ -687,6 +687,24 @@ function primeAudio(){
   bgm.play().catch(()=>{});
 }
 
+async function primeSfx(){
+  try{
+    const prevVol = sfxCheckpoint.volume;
+    sfxCheckpoint.volume = 0;
+    sfxCheckpoint.currentTime = 0;
+
+    const p = sfxCheckpoint.play();
+    if(p && p.then) await p;
+
+    sfxCheckpoint.pause();
+    sfxCheckpoint.currentTime = 0;
+    sfxCheckpoint.volume = prevVol;
+  }catch(e){
+    console.warn('[primeSfx] could not prime checkpoint:', e);
+  }
+}
+
+
 /* --------------------------------------
    Unlock window → Sunday 2025-12-28
 -------------------------------------- */
@@ -1096,7 +1114,10 @@ exitBryanBtn.onclick=()=>{
 startBtn.onclick=()=>{
   if(gameStarted) return;
   gameStarted=true;
+
   primeAudio();
+  primeSfx();      // ✅ iOS: unlock checkpoint.mp3 on Start tap
+
   closeWindow();
 
   poofAtStart();
