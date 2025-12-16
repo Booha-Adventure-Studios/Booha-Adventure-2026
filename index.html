@@ -287,23 +287,6 @@ html,body{
   font-weight:700;
 }
 
-/* wakaba icon in WordWall deck */
-.wakaba-icon{
-  width:13px;
-  height:13px;
-  object-fit:contain;
-  display:inline-block;
-  vertical-align:middle;
-  image-rendering:crisp-edges;
-  pointer-events:none;
-}
-
-.card .hint{
-  opacity:.8;
-  margin-top:12px;
-  font-size:.95rem;
-}
-
 /* Close (x) button */
 .close-btn{
   position:absolute;
@@ -317,6 +300,12 @@ html,body{
   padding:4px 6px;
 }
 .close-btn:hover{color:#fff}
+
+.card .hint{
+  opacity:.8;
+  margin-top:12px;
+  font-size:.95rem;
+}
 
 /* Tools (Bryan) */
 .tools{
@@ -371,7 +360,7 @@ html,body{
 </style>
 </head>
 <body>
-  
+
 <!-- 🔥 Token check script -->
 <script>
   (async function() {
@@ -518,8 +507,6 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-
-
 <!-- Now your adventure HTML continues normally... -->
 
 <div class="start-wrap">
@@ -557,22 +544,13 @@ window.addEventListener('DOMContentLoaded', () => {
       <!-- Study Deck -->
       <div class="box deck-btn" id="deck-study">
         <div class="deck-en">Study</div>
-        <div class="deck-jp">スタディー</div>
+        <div class="deck-jp">べんきょう</div>
       </div>
 
-      <!-- WordWall Deck (with wakaba icon) -->
-      <div class="box deck-btn" id="deck-wordwall">
-        <div class="deck-en">
-          WordWall
-          <img src="assets/wakaba.png" alt="" class="wakaba-icon" />
-        </div>
-        <div class="deck-jp">ワードウォール</div>
-      </div>
-
-      <!-- Booha Deck -->
-      <div class="box deck-btn" id="deck-booha">
-        <div class="deck-en">Booha</div>
-        <div class="deck-jp">ブーハー</div>
+      <!-- Games Deck -->
+      <div class="box deck-btn" id="deck-games">
+        <div class="deck-en">Games</div>
+        <div class="deck-jp">ゲーム</div>
       </div>
 
     </div>
@@ -1105,11 +1083,9 @@ window.addEventListener('resize',()=>{
 document.getElementById("deck-study").onclick = ()=>{
   alert("Study Deck URL coming soon!");
 };
-document.getElementById("deck-wordwall").onclick = ()=>{
-  alert("WordWall Deck URL coming soon!");
-};
-document.getElementById("deck-booha").onclick = ()=>{
-  alert("Booha Deck URL coming soon!");
+
+document.getElementById("deck-games").onclick = ()=>{
+  alert("Games URL coming soon!");
 };
 
 /* --------------------------------------
