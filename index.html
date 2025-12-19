@@ -395,11 +395,37 @@ html,body{
     const API_BASE = 'https://www.bryanharper.tokyo';
     const GATE_URL = 'https://www.bryanharper.tokyo/booha-gate';
 
-    function kickOut(message) {
-      alert(
-        (message || 'Your session has expired. Please log in again.') +
-        '\n\nセッションの確認に問題が発生しました。もう一度ブーハーゲートからログインしてください。'
-      );
+    const MSG = {
+      kicked: {
+        en: "Someone just logged in using your name and PIN.",
+        jp: "別の端末であなたの名前とPINでログインされました。"
+      },
+      expired: {
+        en: "Your session has expired. Please log in again.",
+        jp: "セッションの有効期限が切れました。もう一度ブーハーゲートからログインしてください。"
+      },
+      invalid: {
+        en: "Your session is invalid. Please log in again.",
+        jp: "セッションの確認に問題が発生しました。もう一度ブーハーゲートからログインしてください。"
+      },
+      missing: {
+        en: "No session found. Please log in through the Booha Gate.",
+        jp: "セッションが見つかりません。ブーハーゲートからログインしてください。"
+      },
+      checkFailed: {
+        en: "Session check failed. Please log in again.",
+        jp: "セッション確認に失敗しました。もう一度ブーハーゲートからログインしてください。"
+      },
+      verifyProblem: {
+        en: "There was a problem verifying your session. Please log in again.",
+        jp: "セッション確認中に問題が発生しました。もう一度ブーハーゲートからログインしてください。"
+      }
+    };
+
+    function kickOut(kind, overrideEn) {
+      const m = MSG[kind] || MSG.invalid;
+      const en = overrideEn || m.en;
+      alert(en + "\n\n" + m.jp);
       window.location.href = GATE_URL;
     }
 
@@ -409,7 +435,7 @@ html,body{
     console.log('[Booha Adventure] token from URL:', token);
 
     if (!token) {
-      kickOut('No session found. Please log in through the Booha Gate.');
+      kickOut('missing');
       return;
     }
 
@@ -424,7 +450,7 @@ html,body{
 
       if (!res.ok) {
         console.warn('[Booha Adventure] HTTP error status:', res.status);
-        kickOut('Session check failed. Please log in again.');
+        kickOut('checkFailed');
         return;
       }
 
@@ -432,17 +458,27 @@ html,body{
       console.log('[Booha Adventure] verifyToken response:', data);
 
       if (!data.valid) {
+        // ✅ NEW: show “kicked” message if backend tells us it was kicked
+        // We support multiple possible fields to avoid breaking:
+        // - data.reason === "KICKED"
+        // - data.kicked === true
+        // - data.isActive === false
+        if (data.reason === "KICKED" || data.kicked === true || data.isActive === false) {
+          kickOut('kicked');
+          return;
+        }
+
         if (data.expired) {
-          kickOut('Your session has expired. Please log in again.');
+          kickOut('expired');
         } else {
-          kickOut('Your session is invalid. Please log in again.');
+          kickOut('invalid');
         }
         return;
       }
 
       console.log('✅ Token valid — welcome', data.firstName, data.lastName, 'role:', data.role);
 
-      // 👉 NEW: remember the token for this browser session
+      // remember the token for this browser session
       try {
         sessionStorage.setItem('boohaToken', token);
         console.log('[Booha Adventure] stored token in sessionStorage');
@@ -459,81 +495,20 @@ html,body{
 
         if (msRemaining > 0) {
           setTimeout(() => {
-            kickOut('Your session has expired. Please log in again.');
+            kickOut('expired');
           }, msRemaining);
         } else {
-          kickOut('Your session has expired. Please log in again.');
+          kickOut('expired');
         }
       }
 
     } catch (err) {
       console.error('[Booha Adventure] token verification error:', err);
-      kickOut('There was a problem verifying your session. Please log in again.');
+      kickOut('verifyProblem');
     }
   })();
 </script>
 
-<script>
-window.addEventListener('DOMContentLoaded', () => {
-  const params = new URLSearchParams(window.location.search);
-  const token = params.get('token');
-  console.log('[Booha Adventure → Boo-Riculum] token:', token);
-
-  const booRicBase = 'https://booha-adventure-studios.github.io/Boo-Riculum-2026/';
-
-  // 1) Prefer an existing <a> that points to Boo-Riculum
-  let booRicLink = document.querySelector('a[href*="Boo-Riculum-2026"]');
-
-  // 2) Fallback: maybe the tree itself is clickable (img/div)
-  const booTree = document.getElementById('booTree');
-  if (!booRicLink && booTree) {
-    booRicLink = booTree;
-  }
-
-  if (!booRicLink) {
-    console.warn('❌ Could not find a Boo-Riculum link or #booTree element');
-    return;
-  }
-
-  // If we DO have a token, build the target URL
-  if (token) {
-    const targetUrl =
-      booRicBase +
-      (booRicBase.includes('?') ? '&' : '?') +
-      'token=' + encodeURIComponent(token);
-
-    console.log('[Booha Adventure → Boo-Riculum] URL with token:', targetUrl);
-
-    // If it's an actual <a>, overwrite its href
-    if (booRicLink.tagName && booRicLink.tagName.toLowerCase() === 'a') {
-      booRicLink.href = targetUrl;
-    } else {
-      // Otherwise, use a click handler (for img/div)
-      booRicLink.style.cursor = 'pointer';
-      booRicLink.addEventListener('click', () => {
-        window.location.href = targetUrl;
-      });
-    }
-  } else {
-    // No token at all → always send them back to Gate
-    const handler = (e) => {
-      if (e) e.preventDefault();
-      alert(
-        'No session found. Please log in through the Booha Gate.\n\n' +
-        'セッションがありません。まずブーハーゲートからログインしてください。'
-      );
-      window.location.href = 'https://www.bryanharper.tokyo/booha-gate';
-    };
-
-    if (booRicLink.tagName && booRicLink.tagName.toLowerCase() === 'a') {
-      booRicLink.addEventListener('click', handler);
-    } else {
-      booRicLink.style.cursor = 'pointer';
-      booRicLink.addEventListener('click', handler);
-    }
-  }
-});
-</script>
 
 <!-- Now your adventure HTML continues normally... -->
 
