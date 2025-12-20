@@ -615,21 +615,48 @@ let currentStopForModal = 0;
 const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const MONTHS_JP=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 
-/* ✅ Month theme colors (primary + accent) */
+/* ✅ Month theme colors (primary + accent)
+   - Primary = structure / glow core
+   - Accent  = sparkle / emotional contrast
+*/
 const MONTH_THEMES = [
-  { p:'#3B82F6', s:'#A7F3D0' }, // Jan (ice blue + aurora mint)
-  { p:'#0EA5E9', s:'#F472B6' }, // Feb (winter sky + pink frost)
-  { p:'#22C55E', s:'#FDE047' }, // Mar (spring green + warm sun)
-  { p:'#84CC16', s:'#38BDF8' }, // Apr (bright lime + vivid sky)
-  { p:'#F59E0B', s:'#A855F7' }, // May (amber + violet)
-  { p:'#06B6D4', s:'#F97316' }, // Jun (cyan + sunset orange)
-  { p:'#EF4444', s:'#FACC15' }, // Jul (hot red + sun yellow)
-  { p:'#F97316', s:'#22C55E' }, // Aug (orange + tropical green)
-  { p:'#A855F7', s:'#06B6D4' }, // Sep (purple + teal)
-  { p:'#B45309', s:'#FB7185' }, // Oct (autumn brown + candy pink)
-  { p:'#7C2D12', s:'#F59E0B' }, // Nov (deep fall + ember)
-  { p:'#38BDF8', s:'#EAB308' }  // Dec (frost blue + gold)
+  // ❄️ January — Winter Magic
+  { p:'#60A5FA', s:'#E9D5FF' }, // icy blue + lavender glow
+
+  // 💗 February — Soft Heart / Winter Bloom
+  { p:'#F472B6', s:'#0EA5E9' }, // pink warmth + winter sky
+
+  // 🌱 March — Early Spring Growth
+  { p:'#22C55E', s:'#FDE047' }, // fresh green + sunlight
+
+  // 🌸 April — Sakura Garden
+  { p:'#F9A8D4', s:'#86EFAC' }, // cherry blossom + soft green
+
+  // 🌼 May — Bright Energy / Confidence
+  { p:'#F59E0B', s:'#A855F7' }, // amber + violet ambition
+
+  // 🌊 June — Ocean Adventure
+  { p:'#0284C7', s:'#67E8F9' }, // deep sea + splash cyan
+
+  // 🔥 July — Summer Power
+  { p:'#EF4444', s:'#FACC15' }, // hot red + sun yellow
+
+  // 🍍 August — Tropical Play
+  { p:'#F97316', s:'#22C55E' }, // mango orange + jungle green
+
+  // 🍇 September — Focus & Calm
+  { p:'#A855F7', s:'#06B6D4' }, // thoughtful purple + teal clarity
+
+  // 🎃 October — Halloween Booha
+  { p:'#F97316', s:'#7C3AED' }, // pumpkin orange + spooky violet
+
+  // 🍂 November — Deep Autumn / Reflection
+  { p:'#92400E', s:'#FCD34D' }, // harvest brown + warm gold
+
+  // 🎄 December — Frost & Gold Finale
+  { p:'#38BDF8', s:'#EAB308' }  // frost blue + celebration gold
 ];
+
 
 // 48 checkpoints
 const POS = [
