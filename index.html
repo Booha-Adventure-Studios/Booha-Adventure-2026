@@ -88,7 +88,6 @@ html,body{
   filter:drop-shadow(0 0 10px #00ffccaa);
 }
 
-  
 /* FX layer for explosions / sparkles (iOS safe) */
 #fxLayer{
   position:fixed;
@@ -98,8 +97,6 @@ html,body{
   overflow:visible;
   contain:layout paint;
 }
-
-
 
 /* Booha */
 #booha{
@@ -211,7 +208,6 @@ html,body{
   100% { filter: drop-shadow(0 0 6px #00ffcc40); }
 }
 
-  
 .viewport.shake{
   animation:mazeShake 0.35s ease-out;
 }
@@ -254,8 +250,10 @@ html,body{
 
 .modal.show{display:flex}
 
+/* ✅ FIXED: glow2 default + breathe includes glow2 */
 .card{
   --glow:#9ad;
+  --glow2:#ffd86d; /* secondary default so var is always defined */
   position:relative;
   width:min(760px,92vw);
   background:#0f1836;
@@ -269,21 +267,35 @@ html,body{
   animation:pop .45s cubic-bezier(.2,.8,.2,1) forwards,
              breathe 3.2s ease-in-out .45s infinite;
 
-  box-shadow:0 0 0 1px #ffffff10 inset,
-             0 0 18px var(--glow),
-             0 0 38px var(--glow),
-             0 0 14px var(--glow2),
-             0 0 30px var(--glow2);
+  box-shadow:
+    0 0 0 1px #ffffff10 inset,
+    0 0 18px var(--glow),
+    0 0 38px var(--glow),
+    0 0 14px var(--glow2),
+    0 0 30px var(--glow2);
 }
-
 
 @keyframes pop{
   to{transform:scale(1);opacity:1}
 }
 
 @keyframes breathe{
-  0%,100%{box-shadow:0 0 0 1px #ffffff10 inset,0 0 18px var(--glow),0 0 38px var(--glow)}
-  50%{box-shadow:0 0 0 1px #ffffff10 inset,0 0 28px var(--glow),0 0 58px var(--glow)}
+  0%,100%{
+    box-shadow:
+      0 0 0 1px #ffffff10 inset,
+      0 0 18px var(--glow),
+      0 0 38px var(--glow),
+      0 0 14px var(--glow2),
+      0 0 30px var(--glow2);
+  }
+  50%{
+    box-shadow:
+      0 0 0 1px #ffffff10 inset,
+      0 0 28px var(--glow),
+      0 0 58px var(--glow),
+      0 0 20px var(--glow2),
+      0 0 44px var(--glow2);
+  }
 }
 
 .card .title-en{
@@ -368,7 +380,7 @@ html,body{
 .tools .btn:hover{
   opacity:.9;
 }
-  
+
 /* Start button */
 .start-wrap{
   position:fixed;
@@ -392,8 +404,8 @@ html,body{
 }
 </style>
 </head>
-<body>
 
+<body>
 
 <!-- 🔥 Token check script -->
 <script>
@@ -464,11 +476,6 @@ html,body{
       console.log('[Booha Adventure] verifyToken response:', data);
 
       if (!data.valid) {
-        // ✅ NEW: show “kicked” message if backend tells us it was kicked
-        // We support multiple possible fields to avoid breaking:
-        // - data.reason === "KICKED"
-        // - data.kicked === true
-        // - data.isActive === false
         if (data.reason === "KICKED" || data.kicked === true || data.isActive === false) {
           kickOut('kicked');
           return;
@@ -484,7 +491,6 @@ html,body{
 
       console.log('✅ Token valid — welcome', data.firstName, data.lastName, 'role:', data.role);
 
-      // remember the token for this browser session
       try {
         sessionStorage.setItem('boohaToken', token);
         console.log('[Booha Adventure] stored token in sessionStorage');
@@ -514,9 +520,6 @@ html,body{
     }
   })();
 </script>
-
-
-<!-- Now your adventure HTML continues normally... -->
 
 <div class="start-wrap">
   <button class="btn start-btn" id="start">Start</button>
@@ -549,7 +552,6 @@ html,body{
     <div class="title-jp" id="title-jp">1月　第1週</div>
 
     <div class="placeholders">
-
       <!-- Study Deck -->
       <div class="box deck-btn" id="deck-study">
         <div class="deck-en">Study</div>
@@ -561,7 +563,6 @@ html,body{
         <div class="deck-en">Games</div>
         <div class="deck-jp">ゲーム</div>
       </div>
-
     </div>
 
     <div class="hint">キラキラしている週にもどってね！</div>
@@ -574,16 +575,7 @@ html,body{
 // ----------------------------------------------------------
 /* ============================================================
    ✅ WEEKLY EDIT ZONE (THIS IS THE ONLY PART YOU EDIT)
-   ------------------------------------------------------------
-   - Add / update Study + Games links here.
-   - index 0 = January Week 1, index 1 = January Week 2, etc.
-   - DO NOT put tokens in these URLs.
-   - Tokens are appended automatically when buttons are clicked.
    ============================================================ */
-/* ==============================
-   DECK LINKS (EDIT THIS ONLY)
-   index = checkpoint number
-   ============================== */
 const DECK_LINKS = [
   {
     // January — Week 1 (index 0)
@@ -607,42 +599,28 @@ const DECK_LINKS = [
   }
 ];
 
- /* ==============================
-   MAP OBJECTS (TREES / SIGNS / MONTH MARKERS)
-   - x,y are percent coordinates in the maze
-   - href is a clean URL (token appended automatically)
-   ============================== */
 const MAP_OBJECTS = [];
-
-  // add more objects here...
+// add more objects here...
 
 /* ============================================================
    🔒 ENGINE ZONE (DO NOT EDIT)
-   ------------------------------------------------------------
-   Everything below is the Booha Adventure engine:
-   movement, checkpoints, explosions, window titles, etc.
-   If something breaks, it’s usually NOT in this section.
    ============================================================ */
-  
-// remembers which checkpoint opened the popup
-  // (engine state — do not edit)
 
+// remembers which checkpoint opened the popup (engine state — do not edit)
 let currentStopForModal = 0;
 
-
-  
 /* --------------------------------------
    Basic Constants
 -------------------------------------- */
 const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const MONTHS_JP=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 
+/* ✅ Month theme colors (primary + accent) */
 const MONTH_THEMES = [
-  // Winter (Jan/Feb/Dec) – icy primary + aurora accent
-  { p:'#3B82F6', s:'#A7F3D0' }, // Jan
-  { p:'#0EA5E9', s:'#F472B6' }, // Feb (sky + pink frost)
-  { p:'#22C55E', s:'#FDE047' }, // Mar (green + spring sun)
-  { p:'#84CC16', s:'#38BDF8' }, // Apr (lime + bright sky)
+  { p:'#3B82F6', s:'#A7F3D0' }, // Jan (ice blue + aurora mint)
+  { p:'#0EA5E9', s:'#F472B6' }, // Feb (winter sky + pink frost)
+  { p:'#22C55E', s:'#FDE047' }, // Mar (spring green + warm sun)
+  { p:'#84CC16', s:'#38BDF8' }, // Apr (bright lime + vivid sky)
   { p:'#F59E0B', s:'#A855F7' }, // May (amber + violet)
   { p:'#06B6D4', s:'#F97316' }, // Jun (cyan + sunset orange)
   { p:'#EF4444', s:'#FACC15' }, // Jul (hot red + sun yellow)
@@ -652,9 +630,6 @@ const MONTH_THEMES = [
   { p:'#7C2D12', s:'#F59E0B' }, // Nov (deep fall + ember)
   { p:'#38BDF8', s:'#EAB308' }  // Dec (frost blue + gold)
 ];
-
-
-
 
 // 48 checkpoints
 const POS = [
@@ -740,7 +715,6 @@ async function primeSfx(){
   }
 }
 
-
 /* --------------------------------------
    Unlock window → Sunday 2025-12-28
 -------------------------------------- */
@@ -795,7 +769,7 @@ POS.forEach((p,i)=>{
 });
 
 /* --------------------------------------
-   Color Helpers
+   Color Helpers (Primary + Accent)
 -------------------------------------- */
 function monthPrimary(i){
   const m = Math.floor(i/4);
@@ -805,7 +779,6 @@ function monthAccent(i){
   const m = Math.floor(i/4);
   return (MONTH_THEMES[m] && MONTH_THEMES[m].s) || '#FACC15';
 }
-
 
 /* --------------------------------------
    Booha Position Helpers
@@ -848,12 +821,11 @@ function spawnSpark(x,y){
 }
 
 /* --------------------------------------
-   BIG Explosion (iOS tuned)
+   BIG Explosion (iOS tuned) — two-tone
 -------------------------------------- */
 function fairyBurst(i){
   const p = monthPrimary(i);
-const s = monthAccent(i);
-
+  const s = monthAccent(i);
 
   // page coords (because stopPx adds scrollX/scrollY)
   const rect = maze.getBoundingClientRect();
@@ -886,8 +858,9 @@ const s = monthAccent(i);
 
     const tw = document.createElement('i');
     tw.className = 'fairy';
+
     // alternate primary/accent for a two-tone explosion
-tw.style.color = (Math.random() < 0.62) ? p : s;
+    tw.style.color = (Math.random() < 0.62) ? p : s;
 
     tw.style.left = cx + 'px';
     tw.style.top  = cy + 'px';
@@ -906,9 +879,8 @@ tw.style.color = (Math.random() < 0.62) ? p : s;
   layer.appendChild(frag);
 }
 
-
 /* --------------------------------------
-   Style Stop States
+   Style Stop States (two-tone + dim past)
 -------------------------------------- */
 function styleLive(el,i){
   const p = monthPrimary(i);
@@ -920,7 +892,6 @@ function styleLive(el,i){
   el.style.opacity = 1;
   el.style.pointerEvents = 'auto';
 
-  // two-tone center glow
   el.style.background =
     `radial-gradient(circle,
       ${s} 0%,
@@ -928,7 +899,6 @@ function styleLive(el,i){
       ${p} 62%,
       #0000 100%)`;
 
-  // double box-shadow layers (primary + accent)
   el.style.boxShadow =
     `0 0 0 2px #0008 inset,
      0 0 16px ${p},
@@ -937,7 +907,6 @@ function styleLive(el,i){
      0 0 26px ${s}`;
 }
 
-
 function stylePast(el,i){
   const p = monthPrimary(i);
   const s = monthAccent(i);
@@ -945,7 +914,6 @@ function stylePast(el,i){
   el.classList.remove('hidden','active');
   el.classList.add('old');
 
-  // dimmed look
   el.style.opacity = 0.45;
   el.style.pointerEvents = 'auto';
 
@@ -962,10 +930,10 @@ function stylePast(el,i){
      0 0 6px ${s}44`;
 }
 
+/* ✅ FIXED: removed monthColor() usage entirely */
 function applyStopStates(){
   stops.forEach(({el,i})=>{
     const state=getStopState(i);
-    const color=monthColor(i);
     el.classList.remove('hidden','active','old');
 
     if(state==='future'){
@@ -974,12 +942,11 @@ function applyStopStates(){
       el.style.pointerEvents='none';
       el.style.background='transparent';
       el.style.boxShadow='none';
-    } else if(state==='past'){
-  stylePast(el,i);
-} else {
-  styleLive(el,i);
-}
-
+    }else if(state==='past'){
+      stylePast(el,i);
+    }else{
+      styleLive(el,i);
+    }
   });
 }
 
@@ -1041,18 +1008,18 @@ async function playCheckpoint(){
   await new Promise(r=>setTimeout(r,4000));
 }
 
+/* ✅ FIXED: removed monthColor(); sets glow + glow2 properly */
 function setWindowTitles(i){
   const m=Math.floor(i/4);
   const w=(i%4)+1;
-  const color=monthColor(i);
+
   titleEN.textContent=`${MONTHS_EN[m]} — Week ${w}`;
   titleJP.textContent=`${MONTHS_JP[m]}　第${w}週`;
-  const p = monthPrimary(i);
-const s = monthAccent(i);
-card.style.setProperty('--glow', p);
-// subtle accent layer via a CSS variable
-card.style.setProperty('--glow2', s);
 
+  const p = monthPrimary(i);
+  const s = monthAccent(i);
+  card.style.setProperty('--glow', p);
+  card.style.setProperty('--glow2', s);
 }
 
 function openWindow(){
@@ -1207,7 +1174,6 @@ startBtn.onclick=()=>{
   primeSfx();      // ✅ iOS: unlock checkpoint.mp3 on Start tap
 
   closeWindow();
-
   poofAtStart();
 
   if(todayIndex<0 || todayIndex>=POS.length) return;
@@ -1259,8 +1225,6 @@ function spawnMapObjects(){
   });
 }
 
-
-  
 /* --------------------------------------
    Initial Setup
 -------------------------------------- */
@@ -1271,8 +1235,8 @@ window.onload=()=>{
   todayIndex=getCurrentIndexFromDate();
   updateWindowFromCurrentIndex(todayIndex);
   applyStopStates();
-spawnMapObjects(); // ✅ add this line
 
+  spawnMapObjects(); // ✅ add this line
 
   // BooTree glow + link
   if(booTree){
@@ -1317,7 +1281,6 @@ function goToDeck(which){
 
 document.getElementById("deck-study").onclick = ()=> goToDeck("study");
 document.getElementById("deck-games").onclick = ()=> goToDeck("games");
-
 
 /* --------------------------------------
    BRYAN MODE — COORDINATE TOOL
@@ -1402,8 +1365,8 @@ function coordClick(e){
   marker.style.zIndex="9998";
   marker.style.pointerEvents="none";
 
-document.body.appendChild(marker);
-coordMarkers.push(marker);
+  document.body.appendChild(marker);
+  coordMarkers.push(marker);
 }
 </script>
 
@@ -1412,4 +1375,3 @@ coordMarkers.push(marker);
 
 </body>
 </html>
-
