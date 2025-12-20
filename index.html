@@ -268,10 +268,14 @@ html,body{
   opacity:0;
   animation:pop .45s cubic-bezier(.2,.8,.2,1) forwards,
              breathe 3.2s ease-in-out .45s infinite;
+
   box-shadow:0 0 0 1px #ffffff10 inset,
              0 0 18px var(--glow),
-             0 0 38px var(--glow);
+             0 0 38px var(--glow),
+             0 0 14px var(--glow2),
+             0 0 30px var(--glow2);
 }
+
 
 @keyframes pop{
   to{transform:scale(1);opacity:1}
@@ -388,7 +392,8 @@ html,body{
 }
 </style>
 </head>
-</body>
+<body>
+
 
 <!-- 🔥 Token check script -->
 <script>
@@ -632,20 +637,22 @@ let currentStopForModal = 0;
 const MONTHS_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const MONTHS_JP=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
 
-const MONTH_COLORS = [
-  '#3B82F6', // January – Ice Blue (cold, fresh start)
-  '#0EA5E9', // February – Winter Sky Blue
-  '#22C55E', // March – Spring Green
-  '#84CC16', // April – Bright Lime
-  '#F59E0B', // May – Warm Amber
-  '#06B6D4', // June – Early Summer Cyan
-  '#EF4444', // July – Hot Summer Red
-  '#F97316', // August – Sun Orange
-  '#A855F7', // September – Transition Purple
-  '#B45309', // October – Autumn Brown-Orange
-  '#7C2D12', // November – Deep Fall Red-Brown
-  '#38BDF8'  // December – Frosty Winter Blue
+const MONTH_THEMES = [
+  // Winter (Jan/Feb/Dec) – icy primary + aurora accent
+  { p:'#3B82F6', s:'#A7F3D0' }, // Jan
+  { p:'#0EA5E9', s:'#F472B6' }, // Feb (sky + pink frost)
+  { p:'#22C55E', s:'#FDE047' }, // Mar (green + spring sun)
+  { p:'#84CC16', s:'#38BDF8' }, // Apr (lime + bright sky)
+  { p:'#F59E0B', s:'#A855F7' }, // May (amber + violet)
+  { p:'#06B6D4', s:'#F97316' }, // Jun (cyan + sunset orange)
+  { p:'#EF4444', s:'#FACC15' }, // Jul (hot red + sun yellow)
+  { p:'#F97316', s:'#22C55E' }, // Aug (orange + tropical green)
+  { p:'#A855F7', s:'#06B6D4' }, // Sep (purple + teal)
+  { p:'#B45309', s:'#FB7185' }, // Oct (autumn brown + candy pink)
+  { p:'#7C2D12', s:'#F59E0B' }, // Nov (deep fall + ember)
+  { p:'#38BDF8', s:'#EAB308' }  // Dec (frost blue + gold)
 ];
+
 
 
 
@@ -790,7 +797,15 @@ POS.forEach((p,i)=>{
 /* --------------------------------------
    Color Helpers
 -------------------------------------- */
-function monthColor(i){ return MONTH_COLORS[Math.floor(i/4)]; }
+function monthPrimary(i){
+  const m = Math.floor(i/4);
+  return (MONTH_THEMES[m] && MONTH_THEMES[m].p) || '#38BDF8';
+}
+function monthAccent(i){
+  const m = Math.floor(i/4);
+  return (MONTH_THEMES[m] && MONTH_THEMES[m].s) || '#FACC15';
+}
+
 
 /* --------------------------------------
    Booha Position Helpers
@@ -836,7 +851,9 @@ function spawnSpark(x,y){
    BIG Explosion (iOS tuned)
 -------------------------------------- */
 function fairyBurst(i){
-  const color = monthColor(i);
+  const p = monthPrimary(i);
+const s = monthAccent(i);
+
 
   // page coords (because stopPx adds scrollX/scrollY)
   const rect = maze.getBoundingClientRect();
@@ -869,7 +886,9 @@ function fairyBurst(i){
 
     const tw = document.createElement('i');
     tw.className = 'fairy';
-    tw.style.color = color;
+    // alternate primary/accent for a two-tone explosion
+tw.style.color = (Math.random() < 0.62) ? p : s;
+
     tw.style.left = cx + 'px';
     tw.style.top  = cy + 'px';
 
@@ -891,22 +910,56 @@ function fairyBurst(i){
 /* --------------------------------------
    Style Stop States
 -------------------------------------- */
-function styleLive(el,color){
+function styleLive(el,i){
+  const p = monthPrimary(i);
+  const s = monthAccent(i);
+
   el.classList.remove('hidden','old');
   el.classList.add('active');
-  el.style.opacity=1;
-  el.style.pointerEvents='auto';
-  el.style.background=`radial-gradient(circle,${color} 0%,${color} 60%,#0000 100%)`;
-  el.style.boxShadow=`0 0 0 2px #0008 inset,0 0 18px ${color},0 0 38px ${color}`;
+
+  el.style.opacity = 1;
+  el.style.pointerEvents = 'auto';
+
+  // two-tone center glow
+  el.style.background =
+    `radial-gradient(circle,
+      ${s} 0%,
+      ${p} 42%,
+      ${p} 62%,
+      #0000 100%)`;
+
+  // double box-shadow layers (primary + accent)
+  el.style.boxShadow =
+    `0 0 0 2px #0008 inset,
+     0 0 16px ${p},
+     0 0 34px ${p},
+     0 0 12px ${s},
+     0 0 26px ${s}`;
 }
 
-function stylePast(el,color){
+
+function stylePast(el,i){
+  const p = monthPrimary(i);
+  const s = monthAccent(i);
+
   el.classList.remove('hidden','active');
   el.classList.add('old');
-  el.style.opacity=0.8;
-  el.style.pointerEvents='auto';
-  el.style.background=`radial-gradient(circle,${color}33 0%,${color}55 60%,#0000 100%)`;
-  el.style.boxShadow=`0 0 0 1px #ffffff10,0 0 10px ${color}55,0 0 22px ${color}55`;
+
+  // dimmed look
+  el.style.opacity = 0.45;
+  el.style.pointerEvents = 'auto';
+
+  el.style.background =
+    `radial-gradient(circle,
+      ${s}22 0%,
+      ${p}33 55%,
+      #0000 100%)`;
+
+  el.style.boxShadow =
+    `0 0 0 1px #ffffff10,
+     0 0 8px ${p}55,
+     0 0 18px ${p}44,
+     0 0 6px ${s}44`;
 }
 
 function applyStopStates(){
@@ -921,11 +974,12 @@ function applyStopStates(){
       el.style.pointerEvents='none';
       el.style.background='transparent';
       el.style.boxShadow='none';
-    }else if(state==='past'){
-      stylePast(el,color);
-    }else{
-      styleLive(el,color);
-    }
+    } else if(state==='past'){
+  stylePast(el,i);
+} else {
+  styleLive(el,i);
+}
+
   });
 }
 
@@ -993,7 +1047,12 @@ function setWindowTitles(i){
   const color=monthColor(i);
   titleEN.textContent=`${MONTHS_EN[m]} — Week ${w}`;
   titleJP.textContent=`${MONTHS_JP[m]}　第${w}週`;
-  card.style.setProperty('--glow',color);
+  const p = monthPrimary(i);
+const s = monthAccent(i);
+card.style.setProperty('--glow', p);
+// subtle accent layer via a CSS variable
+card.style.setProperty('--glow2', s);
+
 }
 
 function openWindow(){
