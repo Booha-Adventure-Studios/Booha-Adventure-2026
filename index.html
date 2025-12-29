@@ -79,7 +79,7 @@ html,body{
   left:32.13%;
   top:37.45%;
   transform:translate(-50%, -50%);
-  width:12%;              /* smaller than Boo-riculum tree */
+  width:12%;
   aspect-ratio:1 / 1;
   opacity:0;
   cursor:pointer;
@@ -89,6 +89,7 @@ html,body{
     filter 2s ease-out;
   /* subtle purple base glow */
   filter:drop-shadow(0 0 5px #b388ff40);
+  will-change: transform, filter; /* smoother animation */
 }
 
 #tetrisTree.glow{
@@ -96,18 +97,46 @@ html,body{
   filter:
     drop-shadow(0 0 8px #c084ff88)
     drop-shadow(0 0 16px #8b5cf644);
-  animation: tetrisTreeFlicker 4s infinite;
+  /* pulse + unique flicker */
+  animation:
+    tetrisPulse 2.4s ease-in-out infinite,
+    tetrisTreeFlicker 4s infinite;
 }
 
-/* Slightly different flicker so it feels related but unique */
+/* Gentle “alive” breathing (keeps translate to prevent jumping) */
+@keyframes tetrisPulse{
+  0%,100% { transform:translate(-50%, -50%) scale(1); }
+  50%     { transform:translate(-50%, -50%) scale(1.05); }
+}
+
+/* Unique flicker: two small pops (arcade vibe) */
 @keyframes tetrisTreeFlicker{
-  0%,100% { filter:
-    drop-shadow(0 0 8px #c084ff88)
-    drop-shadow(0 0 16px #8b5cf644);
+  0%, 100% {
+    filter:
+      drop-shadow(0 0 8px #c084ff88)
+      drop-shadow(0 0 16px #8b5cf644);
   }
-  50% { filter:
-    drop-shadow(0 0 12px #d8b4feaa)
-    drop-shadow(0 0 22px #a855f766);
+
+  18% {
+    filter:
+      drop-shadow(0 0 12px #d8b4feaa)
+      drop-shadow(0 0 22px #a855f766);
+  }
+  26% {
+    filter:
+      drop-shadow(0 0 9px #c084ff88)
+      drop-shadow(0 0 18px #8b5cf644);
+  }
+
+  62% {
+    filter:
+      drop-shadow(0 0 13px #e9d5ffaa)
+      drop-shadow(0 0 24px #c026d388);
+  }
+  72% {
+    filter:
+      drop-shadow(0 0 8px #c084ff88)
+      drop-shadow(0 0 16px #8b5cf644);
   }
 }
 
