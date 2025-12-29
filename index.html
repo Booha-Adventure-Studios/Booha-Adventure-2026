@@ -72,6 +72,47 @@ html,body{
   animation: treeFlicker 4s infinite;
 }
 
+
+/* Tetris Tree (inside the maze) */
+#tetrisTree{
+  position:absolute;
+  left:32.13%;
+  top:37.45%;
+  transform:translate(-50%, -50%);
+  width:12%;              /* smaller than Boo-riculum tree */
+  aspect-ratio:1 / 1;
+  opacity:0;
+  cursor:pointer;
+  z-index:14;
+  transition:
+    opacity 1.8s ease-out,
+    filter 2s ease-out;
+  /* subtle purple base glow */
+  filter:drop-shadow(0 0 5px #b388ff40);
+}
+
+#tetrisTree.glow{
+  opacity:1;
+  filter:
+    drop-shadow(0 0 8px #c084ff88)
+    drop-shadow(0 0 16px #8b5cf644);
+  animation: tetrisTreeFlicker 4s infinite;
+}
+
+/* Slightly different flicker so it feels related but unique */
+@keyframes tetrisTreeFlicker{
+  0%,100% { filter:
+    drop-shadow(0 0 8px #c084ff88)
+    drop-shadow(0 0 16px #8b5cf644);
+  }
+  50% { filter:
+    drop-shadow(0 0 12px #d8b4feaa)
+    drop-shadow(0 0 22px #a855f766);
+  }
+}
+
+  
+
 /* --------------------------------------
    MAP OBJECTS (Trees / Review Decks)
 -------------------------------------- */
@@ -530,6 +571,9 @@ html,body{
     <div id="maze">
       <!-- Boo-riculum tree lives *inside* the maze -->
       <img id="booTree" src="assets/BooTree.png" alt="boo tree">
+
+      <!-- Tetris Tree -->
+      <img id="tetrisTree" src="assets/tetris-tree.png" alt="tetris tree">
     </div>
   </div>
 </div>
@@ -1291,17 +1335,36 @@ window.onload=()=>{
 
   spawnMapObjects(); // ✅ add this line
 
-  // BooTree glow + link
-  if(booTree){
-    setTimeout(()=>{ booTree.classList.add('glow'); },1500);
-    booTree.addEventListener('click',()=>{
-      window.open(
-        "https://booha-adventure-studios.github.io/Boo-Riculum-2026/",
-        "_blank"
-      );
-    });
-  }
-};
+// BooTree glow + link
+if(booTree){
+  setTimeout(()=>{
+    booTree.classList.add('glow');
+
+    const tetrisTree = document.getElementById("tetrisTree");
+    if(tetrisTree) tetrisTree.classList.add("glow");
+
+  },1500);
+
+  booTree.addEventListener('click',()=>{
+    window.open(
+      "https://booha-adventure-studios.github.io/Boo-Riculum-2026/",
+      "_blank"
+    );
+  });
+}
+
+/* Tetris Tree click → Booha Blocks */
+const tetrisTree = document.getElementById("tetrisTree");
+if(tetrisTree){
+  tetrisTree.addEventListener('click',()=>{
+    window.open(
+      "https://booha-adventure-studios.github.io/booha-blocks/",
+      "_blank"
+    );
+  });
+}
+
+
 
 window.addEventListener('resize',()=>{
   requestAnimationFrame(realignBoohaToCurrent);
