@@ -89,7 +89,7 @@ html,body{
     filter 2s ease-out;
   /* subtle purple base glow */
   filter:drop-shadow(0 0 5px #b388ff40);
-  will-change: transform, filter; /* smoother animation */
+  will-change: filter;
 }
 
 #tetrisTree.glow{
@@ -97,46 +97,21 @@ html,body{
   filter:
     drop-shadow(0 0 8px #c084ff88)
     drop-shadow(0 0 16px #8b5cf644);
-  /* pulse + unique flicker */
-  animation:
-    tetrisPulse 2.4s ease-in-out infinite,
-    tetrisTreeFlicker 4s infinite;
+  animation: tetrisTreeGlow 4s ease-in-out infinite;
 }
 
-/* Gentle “alive” breathing (keeps translate to prevent jumping) */
-@keyframes tetrisPulse{
-  0%,100% { transform:translate(-50%, -50%) scale(1); }
-  50%     { transform:translate(-50%, -50%) scale(1.05); }
-}
-
-/* Unique flicker: two small pops (arcade vibe) */
-@keyframes tetrisTreeFlicker{
+/* Glow-only pulse (NO movement) */
+@keyframes tetrisTreeGlow{
   0%, 100% {
     filter:
-      drop-shadow(0 0 8px #c084ff88)
-      drop-shadow(0 0 16px #8b5cf644);
+      drop-shadow(0 0 8px  #c084ff66)
+      drop-shadow(0 0 16px #8b5cf633);
   }
 
-  18% {
+  50% {
     filter:
-      drop-shadow(0 0 12px #d8b4feaa)
-      drop-shadow(0 0 22px #a855f766);
-  }
-  26% {
-    filter:
-      drop-shadow(0 0 9px #c084ff88)
-      drop-shadow(0 0 18px #8b5cf644);
-  }
-
-  62% {
-    filter:
-      drop-shadow(0 0 13px #e9d5ffaa)
-      drop-shadow(0 0 24px #c026d388);
-  }
-  72% {
-    filter:
-      drop-shadow(0 0 8px #c084ff88)
-      drop-shadow(0 0 16px #8b5cf644);
+      drop-shadow(0 0 14px #e9d5ffcc)
+      drop-shadow(0 0 26px #a855f788);
   }
 }
 
