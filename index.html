@@ -1324,45 +1324,56 @@ function spawnMapObjects(){
 
 /* --------------------------------------
    Initial Setup
+   REMINDERS:
+   ✅ Make sure these exist ABOVE this block:
+      const booTree = document.getElementById("booTree");
+      (and #tetrisTree is in the HTML)
+   ✅ This block MUST end with:  };   (don’t forget to close window.onload)
 -------------------------------------- */
-window.onload=()=>{
-  const pos=startPosition();
-  placeBoohaXY(pos.x,pos.y);
+window.onload = () => {
+  const pos = startPosition();
+  placeBoohaXY(pos.x, pos.y);
 
-  todayIndex=getCurrentIndexFromDate();
+  todayIndex = getCurrentIndexFromDate();
   updateWindowFromCurrentIndex(todayIndex);
   applyStopStates();
 
-  spawnMapObjects(); // ✅ add this line
+  spawnMapObjects(); // ✅ spawns map objects (including trees)
 
-// BooTree glow + link
-if(booTree){
-  setTimeout(()=>{
-    booTree.classList.add('glow');
+  // ✅ Grab tetrisTree ONCE (don’t redeclare it inside setTimeout)
+  const tetrisTree = document.getElementById("tetrisTree");
 
-    const tetrisTree = document.getElementById("tetrisTree");
-    if(tetrisTree) tetrisTree.classList.add("glow");
+  // BooTree glow + link
+  if (booTree) {
+    setTimeout(() => {
+      booTree.classList.add("glow");
+      if (tetrisTree) tetrisTree.classList.add("glow"); // ✅ same timing as BooTree
+    }, 1500);
 
-  },1500);
+    booTree.addEventListener("click", () => {
+      window.open(
+        "https://booha-adventure-studios.github.io/Boo-Riculum-2026/",
+        "_blank"
+      );
+    });
+  }
 
-  booTree.addEventListener('click',()=>{
-    window.open(
-      "https://booha-adventure-studios.github.io/Boo-Riculum-2026/",
-      "_blank"
-    );
-  });
-}
+  // Tetris Tree click → Booha Blocks
+  if (tetrisTree) {
+    tetrisTree.addEventListener("click", () => {
+      window.open(
+        "https://booha-adventure-studios.github.io/booha-blocks/",
+        "_blank"
+      );
+    });
+  }
 
-/* Tetris Tree click → Booha Blocks */
-const tetrisTree = document.getElementById("tetrisTree");
-if(tetrisTree){
-  tetrisTree.addEventListener('click',()=>{
-    window.open(
-      "https://booha-adventure-studios.github.io/booha-blocks/",
-      "_blank"
-    );
-  });
-}
+  // REMINDER:
+  // ✅ If you also have a resize handler, keep it INSIDE onload:
+  // window.addEventListener('resize', ()=> requestAnimationFrame(realignBoohaToCurrent));
+
+}; // ✅ IMPORTANT: closes window.onload
+
 
 
 
