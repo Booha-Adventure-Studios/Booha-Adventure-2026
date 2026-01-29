@@ -142,45 +142,33 @@ html,body{
   opacity:1;
 }
 
-/* ---- Magical twinkles (NO smoke blobs) ----
-   We draw a few tiny star points that blink, plus a very subtle gold ring.
-*/
+/* ---- Soft gold pulse behind January Review ---- */
 #janReview.glow::before{
   content:"";
   position:absolute;
-  inset:-14%;
+  inset:-22%;              /* glow sits behind the sign */
   border-radius:50%;
+  z-index:-1;              /* behind the image */
   pointer-events:none;
-  /* subtle gold aura ring */
-  box-shadow:
-    0 0 0 2px rgba(255,210,120,.18),
-    0 0 16px rgba(255,210,120,.10);
-  opacity:.85;
-}
-
-#janReview.glow::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  pointer-events:none;
-  /* tiny twinkles: a few crisp points, no blur, no gradients */
   background:
-    radial-gradient(circle, rgba(255,245,210,.95) 0 1.2px, transparent 1.3px) 22% 18% / 100% 100% no-repeat,
-    radial-gradient(circle, rgba(255,220,140,.85) 0 1.0px, transparent 1.1px) 74% 26% / 100% 100% no-repeat,
-    radial-gradient(circle, rgba(255,245,210,.80) 0 0.9px, transparent 1.0px) 58% 78% / 100% 100% no-repeat,
-    radial-gradient(circle, rgba(255,220,140,.75) 0 0.8px, transparent 0.9px) 18% 66% / 100% 100% no-repeat,
-    radial-gradient(circle, rgba(255,245,210,.90) 0 1.1px, transparent 1.2px) 86% 62% / 100% 100% no-repeat;
-  animation: janReviewTwinkle 1.35s ease-in-out infinite;
-  opacity:.9;
+    radial-gradient(circle,
+      rgba(255,210,120,.28) 0%,
+      rgba(255,210,120,.18) 38%,
+      rgba(255,210,120,.08) 60%,
+      rgba(255,210,120,0) 75%);
+  animation: janReviewPulse 3.8s ease-in-out infinite;
 }
 
-/* blink pattern + tiny scale pulse (reads as magic, not dirt) */
-@keyframes janReviewTwinkle{
-  0%   { opacity:.25; transform:scale(1); }
-  25%  { opacity:.95; }
-  50%  { opacity:.40; transform:scale(1.02); }
-  75%  { opacity:.85; }
-  100% { opacity:.25; transform:scale(1); }
+/* slow, calm breathing pulse */
+@keyframes janReviewPulse{
+  0%, 100%{
+    opacity:.35;
+    transform:scale(.97);
+  }
+  50%{
+    opacity:.6;
+    transform:scale(1.05);
+  }
 }
 
 
