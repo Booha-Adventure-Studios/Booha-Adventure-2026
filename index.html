@@ -141,23 +141,26 @@ html,body{
 #janReview.glow{
   opacity:1;
   filter:
-    drop-shadow(0 0 8px  #f5c16c88)
-    drop-shadow(0 0 16px #d4a44a55);
-  animation: janReviewGlow 3.4s ease-in-out infinite;
+    drop-shadow(0 0 10px  rgba(255,255,255,0.55))
+    drop-shadow(0 0 18px  rgba(245,193,108,0.75))
+    drop-shadow(0 0 34px  rgba(212,164,74,0.55));
+  animation: janReviewGlow 3.2s ease-in-out infinite;
 }
 
-/* Glow-only pulse (NO movement) */
+/* Amber + white contrast pulse (NO movement) */
 @keyframes janReviewGlow{
   0%, 100% {
     filter:
-      drop-shadow(0 0 8px  #f5c16c66)
-      drop-shadow(0 0 16px #d4a44a44);
+      drop-shadow(0 0 8px  rgba(255,255,255,0.35))
+      drop-shadow(0 0 16px rgba(245,193,108,0.55))
+      drop-shadow(0 0 28px rgba(212,164,74,0.45));
   }
 
   50% {
     filter:
-      drop-shadow(0 0 14px #ffe3a3cc)
-      drop-shadow(0 0 26px #e0b35f88);
+      drop-shadow(0 0 18px rgba(255,255,255,0.95))   /* ⚡ white snap */
+      drop-shadow(0 0 34px rgba(255,214,140,0.95))
+      drop-shadow(0 0 64px rgba(212,164,74,0.75));
   }
 }
 
