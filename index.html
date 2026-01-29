@@ -124,7 +124,7 @@ html,body{
   left:20.67%;
   top:25.49%;
   transform:translate(-50%, -50%);
-  width:7.5%;            /* smaller than tetrisTree (12%) */
+  width:7.5%;
   aspect-ratio:1 / 1;
   opacity:0;
   cursor:pointer;
@@ -132,80 +132,57 @@ html,body{
   transition:opacity 1.8s ease-out;
 }
 
-/* image itself */
 #janReview img{
   width:100%;
   height:auto;
   display:block;
 }
 
-/* visible state (same pattern as trees) */
 #janReview.glow{
   opacity:1;
 }
 
-/* ---- Gold sparkles rising ---- */
-#janReview.glow::before,
+/* ---- Magical twinkles (NO smoke blobs) ----
+   We draw a few tiny star points that blink, plus a very subtle gold ring.
+*/
+#janReview.glow::before{
+  content:"";
+  position:absolute;
+  inset:-14%;
+  border-radius:50%;
+  pointer-events:none;
+  /* subtle gold aura ring */
+  box-shadow:
+    0 0 0 2px rgba(255,210,120,.18),
+    0 0 16px rgba(255,210,120,.10);
+  opacity:.85;
+}
+
 #janReview.glow::after{
   content:"";
   position:absolute;
-  left:50%;
-  bottom:10%;
-  width:10%;
-  height:10%;
-  transform:translateX(-50%);
+  inset:0;
   pointer-events:none;
-  background:radial-gradient(circle,
-    rgba(255,220,120,1) 0%,
-    rgba(255,220,120,.6) 35%,
-    rgba(255,220,120,0) 70%);
-  opacity:0;
-  filter:blur(.25px);
-  animation: janReviewSparkle 1.05s linear infinite;
+  /* tiny twinkles: a few crisp points, no blur, no gradients */
+  background:
+    radial-gradient(circle, rgba(255,245,210,.95) 0 1.2px, transparent 1.3px) 22% 18% / 100% 100% no-repeat,
+    radial-gradient(circle, rgba(255,220,140,.85) 0 1.0px, transparent 1.1px) 74% 26% / 100% 100% no-repeat,
+    radial-gradient(circle, rgba(255,245,210,.80) 0 0.9px, transparent 1.0px) 58% 78% / 100% 100% no-repeat,
+    radial-gradient(circle, rgba(255,220,140,.75) 0 0.8px, transparent 0.9px) 18% 66% / 100% 100% no-repeat,
+    radial-gradient(circle, rgba(255,245,210,.90) 0 1.1px, transparent 1.2px) 86% 62% / 100% 100% no-repeat;
+  animation: janReviewTwinkle 1.35s ease-in-out infinite;
+  opacity:.9;
 }
 
-/* second stream */
-#janReview.glow::after{
-  width:8%;
-  height:8%;
-  animation-delay:.6s;
-  animation-duration:1.6s;
+/* blink pattern + tiny scale pulse (reads as magic, not dirt) */
+@keyframes janReviewTwinkle{
+  0%   { opacity:.25; transform:scale(1); }
+  25%  { opacity:.95; }
+  50%  { opacity:.40; transform:scale(1.02); }
+  75%  { opacity:.85; }
+  100% { opacity:.25; transform:scale(1); }
 }
 
-/* extra sparkles using shadow clones */
-#janReview.glow{
-  --spark: rgba(255,215,120,.9);
-  --sparkSoft: rgba(255,200,90,.55);
-}
-
-#janReview.glow::before{
-  box-shadow:
-    -6px -4px 0 var(--spark),
-     6px -8px 0 var(--sparkSoft),
-    -10px -14px 0 var(--spark),
-     10px -18px 0 var(--sparkSoft);
-}
-
-
-@keyframes janReviewSparkle{
-  0%{
-    opacity:0;
-    transform:translateX(-50%) translateY(0) scale(.8);
-  }
-  15%{
-    opacity:1;
-  }
-  50%{
-    filter:blur(.15px);
-  }
-  70%{
-    opacity:.5;
-  }
-  100%{
-    opacity:0;
-    transform:translateX(-50%) translateY(-220%) scale(1.25);
-  }
-}
 
 
 
