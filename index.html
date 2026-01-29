@@ -115,6 +115,80 @@ html,body{
   }
 }
 
+/* ===============================
+   January Review Trail Sign
+   =============================== */
+
+#janReview{
+  position:absolute;
+  left:20.67%;
+  top:25.49%;
+  transform:translate(-50%, -50%);
+  width:7.5%;            /* smaller than tetrisTree (12%) */
+  aspect-ratio:1 / 1;
+  opacity:0;
+  cursor:pointer;
+  z-index:13;
+  transition:opacity 1.8s ease-out;
+}
+
+/* image itself */
+#janReview img{
+  width:100%;
+  height:auto;
+  display:block;
+}
+
+/* visible state (same pattern as trees) */
+#janReview.glow{
+  opacity:1;
+}
+
+/* ---- Gold sparkles rising ---- */
+#janReview.glow::before,
+#janReview.glow::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:10%;
+  width:10%;
+  height:10%;
+  transform:translateX(-50%);
+  pointer-events:none;
+  background:radial-gradient(circle,
+    rgba(255,220,120,1) 0%,
+    rgba(255,220,120,.55) 35%,
+    rgba(255,220,120,0) 70%);
+  opacity:0;
+  filter:blur(.3px);
+  animation: janReviewSparkle 1.4s linear infinite;
+}
+
+#janReview.glow::after{
+  width:8%;
+  height:8%;
+  animation-delay:.6s;
+  animation-duration:1.6s;
+}
+
+@keyframes janReviewSparkle{
+  0%{
+    opacity:0;
+    transform:translateX(-50%) translateY(0) scale(.8);
+  }
+  15%{
+    opacity:1;
+  }
+  70%{
+    opacity:.5;
+  }
+  100%{
+    opacity:0;
+    transform:translateX(-50%) translateY(-220%) scale(1.25);
+  }
+}
+
+
   
 
 /* --------------------------------------
@@ -578,6 +652,12 @@ html,body{
 
       <!-- Tetris Tree -->
       <img id="tetrisTree" src="assets/tetris-tree.png" alt="tetris tree">
+
+      <!-- January Review Trail Sign -->
+      <div id="janReview">
+      <img src="assets/jan-review.png" alt="January Review">
+</div>
+
     </div>
   </div>
 </div>
@@ -1344,14 +1424,26 @@ window.onload = () => {
 
   spawnMapObjects(); // ✅ spawns map objects (including trees)
 
-  // ✅ Grab tetrisTree ONCE (don’t redeclare it inside setTimeout)
+  // ✅ Grab elements ONCE
+  const janReview  = document.getElementById("janReview");
   const tetrisTree = document.getElementById("tetrisTree");
+
+  // January Review sign click → Monthly Review Deck
+  if (janReview) {
+    janReview.addEventListener("click", () => {
+      window.open(
+        "https://booha-adventure-studios.github.io/booha-monthly-review-decks/january/",
+        "_blank"
+      );
+    });
+  }
 
   // BooTree glow + link
   if (booTree) {
     setTimeout(() => {
       booTree.classList.add("glow");
       if (tetrisTree) tetrisTree.classList.add("glow"); // ✅ same timing as BooTree
+      if (janReview)  janReview.classList.add("glow");  // ✅ show review sign too
     }, 1500);
 
     booTree.addEventListener("click", () => {
@@ -1372,18 +1464,15 @@ window.onload = () => {
     });
   }
 
-  // REMINDER:
-  // ✅ If you also have a resize handler, keep it INSIDE onload:
-  // window.addEventListener('resize', ()=> requestAnimationFrame(realignBoohaToCurrent));
+  // ✅ Keep resize handler INSIDE onload (per your reminder)
+  window.addEventListener("resize", () => {
+    requestAnimationFrame(realignBoohaToCurrent);
+  });
 
 }; // ✅ IMPORTANT: closes window.onload
 
 
-
-
-window.addEventListener('resize',()=>{
-  requestAnimationFrame(realignBoohaToCurrent);
-});
+  
 
 /* --------------------------------------
    DECK BUTTON CLICK HANDLERS (uses DECK_LINKS + token carry-over)
